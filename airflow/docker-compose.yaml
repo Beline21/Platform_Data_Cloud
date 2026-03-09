@@ -80,6 +80,7 @@ x-airflow-common:
     - /opt/docker-volumes/airflow/config:/opt/airflow/config
     - /opt/docker-volumes/airflow/plugins:/opt/airflow/plugins
     - /opt/docker-volumes/airflow/data:/opt/airflow/data
+    - ./data/airflow:/opt/airflow/output
   user: "${AIRFLOW_UID:-50000}:0"
 #  depends_on:
 #    &airflow-common-depends-on
