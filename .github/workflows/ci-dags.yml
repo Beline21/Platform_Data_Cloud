@@ -33,4 +33,4 @@ jobs:
       - name: Lint Python
         run: |
           pip install flake8
-          flake8 dags/  # vérifie le style des DAGs
+          flake8 airflow/dags/  # vérifie le style des DAGs
