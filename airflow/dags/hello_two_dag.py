@@ -3,7 +3,7 @@ from airflow.sdk import dag, task
 
 
 @dag(
-    dag_id="hello_world_simple",
+    dag_id="hello_world_simple_test",
     schedule="@daily",
     start_date=datetime(2026, 1, 1),
     catchup=False,
