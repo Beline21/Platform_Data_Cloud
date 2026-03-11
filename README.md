@@ -37,6 +37,7 @@ All the files and documents are organised this way :
    |-  airflow
       |-  config
       |-  dags
+         |-  hello_two_dag.py
       |-  data
          |-  airflow
       |-  docker-compose.yaml
