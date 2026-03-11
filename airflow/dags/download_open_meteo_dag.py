@@ -14,6 +14,7 @@ default_args = {
     "retry_delay": timedelta(minutes=5),
 }
 
+
 @dag(
     dag_id="open_meteo_berlin",
     default_args=default_args,
@@ -50,6 +51,7 @@ def open_meteo_berlin_dag():
             raise Exception(f"Erreur API Open-Meteo : {response.status_code}")
 
     fetch_weather()
+
 
 # Instanciation du DAG
 open_meteo_berlin_dag = open_meteo_berlin_dag()
