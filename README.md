@@ -14,7 +14,9 @@ All the files and documents are organised this way :
 |-  containerd
 |-  lost+found
 |-  docker
-   |-  daemon.json 
+   |-  daemon.json
+|-  airflow
+   |-  output 
 |-  docker-volumes
    |-  postgres
    |-  redis
@@ -36,6 +38,7 @@ All the files and documents are organised this way :
       |-  config
       |-  dags
       |-  data
+         |-  airflow
       |-  docker-compose.yaml
       |-  logs
       |-  plugins

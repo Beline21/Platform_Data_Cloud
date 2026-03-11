@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - /opt/docker-volumes/postgres/opt:/var/lib/postgresql/opt
+      - /opt/docker-volumes/postgres/opt:/var/lib/postgresql/data
     networks:
       - platform-net
 
