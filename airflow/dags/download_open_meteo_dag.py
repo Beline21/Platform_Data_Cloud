@@ -31,7 +31,7 @@ def open_meteo_berlin_dag():
     def fetch_weather():
         # URL Open-Meteo pour Berlin (température horaire)
         url = (
-            "https://api.open-meteo.com/v1/forecast"
+            "https://api.open-meteo.com/v1/forecast?"
             "latitude=52.52&longitude=13.41&hourly=temperature_2m"
         )
         filename = os.path.join(DATA_DIR, "open_meteo_berlin.json")
