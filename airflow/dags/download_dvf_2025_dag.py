@@ -59,7 +59,7 @@ def dvf_2025_dag():
         txt_path = os.path.join(DATA_DIR, txt_file)
         csv_path = os.path.join(DATA_DIR, "dvf_2025.csv")
 
-        with open(txt_path, "r", encoding="utf-8") as txt_f, \
+        with open(txt_path, "r", encoding="latin-1") as txt_f, \
              open(csv_path, "w", newline="", encoding="utf-8") as csv_f:
 
             reader = csv.reader(txt_f, delimiter="|")
