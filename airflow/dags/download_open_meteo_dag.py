@@ -26,10 +26,15 @@ TRANSFORM_METEO_SQL = """
 DROP TABLE IF EXISTS silver.meteo_quotidien;
 CREATE TABLE silver.meteo_quotidien AS
 SELECT
-    col1::type1 AS col1,
-    COALESCE(col2::type2, 0) AS col2,
-    COALESCE(col3::type3, 0) AS col3,
-    COALESCE(col4::type4, 0) AS col4
+    time::TIMESTAMP AS time,
+    COALESCE(temperature_2m::FLOAT, 0) AS temperature_2m,
+    COALESCE(latitude::FLOAT, 0) AS latitude,
+    COALESCE(longitude::FLOAT, 0) AS longitude,
+    COALESCE(elevation::FLOAT, 0) AS elevation,
+    COALESCE(generationtime_ms::FLOAT, 0) AS generationtime_ms,
+    COALESCE(utc_offset_seconds::INT, 0) AS utc_offset_seconds,
+    COALESCE(timezone::TEXT, '') AS timezone,
+    COALESCE(timezone_abbreviation::TEXT, '') AS timezone_abbreviation
 FROM bronze.meteo_quotidien;
 """
 
@@ -78,15 +83,24 @@ def open_meteo_berlin_dag():
         with open(src) as f:
             data = json.load(f)
 
-        # Exemple : adapter selon la structure du JSON Open-Meteo
-        df = pd.DataFrame(
-            {
-                "col1": data["col1"],
-                "col2": data["col2"],
-                "col3": data["col3"],
-                "col4": data["col4"],
-            }
-        )
+        # Flatten hourly data
+        hourly = data["hourly"]
+        df = pd.DataFrame({
+            "time": hourly["time"],
+            "temperature_2m": hourly["temperature_2m"]
+        })
+
+        # Ajouter les colonnes globales
+        df["latitude"] = data["latitude"]
+        df["longitude"] = data["longitude"]
+        df["elevation"] = data["elevation"]
+        df["generationtime_ms"] = data["generationtime_ms"]
+        df["utc_offset_seconds"] = data["utc_offset_seconds"]
+        df["timezone"] = data["timezone"]
+        df["timezone_abbreviation"] = data["timezone_abbreviation"]
+
+        # Conversion datetime
+        df["time"] = pd.to_datetime(df["time"])
 
         engine = create_engine(
             "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
