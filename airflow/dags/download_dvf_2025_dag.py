@@ -2,6 +2,7 @@ from airflow.sdk import dag, task
 from datetime import datetime, timedelta
 import requests
 import os
+import zipfile
 
 # Chemin où seront stockés les fichiers sur le volume Docker
 DATA_DIR = "/opt/airflow/output"
@@ -26,27 +27,34 @@ default_args = {
 def dvf_2025_dag():
 
     @task()
-    def download_dvf():
+    def download_and_extract_dvf():
         # URL du fichier DVF 2025 (exemple, à remplacer par l’URL exacte)
         url = (
             "https://www.data.gouv.fr/api/1/"
             "datasets/r/4d741143-8331-4b59-95c2-3b24a7bdbe3c"
         )
-        filename = os.path.join(DATA_DIR, "dvf_2025.csv")
 
         # Crée le dossier si n’existe pas
         os.makedirs(DATA_DIR, exist_ok=True)
 
-        # Téléchargement
-        response = requests.get(url)
-        if response.status_code == 200:
-            with open(filename, "wb") as f:
-                f.write(response.content)
-            return f"Fichier téléchargé avec succès : {filename}"
-        else:
-            raise Exception(f"Erreur télécharg. DVF : {response.status_code}")
+        zip_path = os.path.join(DATA_DIR, "dvf_2025.zip")
 
-    download_dvf()
+        # téléchargement
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            raise Exception(f"Erreur téléch. DVF : {response.status_code}")
+
+        with open(zip_path, "wb") as f:
+            f.write(response.content)
+
+        # décompression
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(DATA_DIR)
+
+        return f"DVF téléchargé et extrait dans {DATA_DIR}"
+
+    download_and_extract_dvf()
 
 
 # Instanciation du DAG
