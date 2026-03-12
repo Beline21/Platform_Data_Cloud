@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import requests
 import os
 import zipfile
+import csv
 
 # Chemin où seront stockés les fichiers sur le volume Docker
 DATA_DIR = "/opt/airflow/output"
@@ -52,7 +53,25 @@ def dvf_2025_dag():
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(DATA_DIR)
 
-        return f"DVF téléchargé et extrait dans {DATA_DIR}"
+        # conversion TXT -> CSV
+        txt_file = [f for f in os.listdir(DATA_DIR) if f.endswith(".txt")][0]
+
+        txt_path = os.path.join(DATA_DIR, txt_file)
+        csv_path = os.path.join(DATA_DIR, "dvf_2025.csv")
+
+        with open(txt_path, "r", encoding="utf-8") as txt_f, \
+             open(csv_path, "w", newline="", encoding="utf-8") as csv_f:
+
+            reader = csv.reader(txt_f, delimiter="|")
+            writer = csv.writer(csv_f)
+
+            for row in reader:
+                writer.writerow(row)
+
+        os.remove(zip_path)
+        os.remove(txt_path)
+
+        return f"CSV généré : {csv_path}"
 
     download_and_extract_dvf()
 
