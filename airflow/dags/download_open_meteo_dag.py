@@ -71,7 +71,7 @@ def open_meteo_berlin_dag():
 
     def load_to_bronze(**context):
         """Lecture du JSON → insertion dans bronze.meteo_quotidien."""
-        src = DATA_DIR / "<mon_fichier>.json"
+        src = DATA_DIR / "open_meteo_berlin.json"
         if not src.exists():
             raise FileNotFoundError(f"Fichier non trouvé : {src}")
 
