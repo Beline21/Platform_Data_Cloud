@@ -1,5 +1,4 @@
 import requests
-from airflow.models import TaskInstance
 
 
 def notify_failure(context: dict):
