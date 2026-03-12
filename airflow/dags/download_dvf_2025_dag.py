@@ -1,5 +1,6 @@
 from airflow.sdk import dag, task
 from datetime import datetime, timedelta
+from utils.notifications import notify_failure
 import requests
 import os
 import zipfile
@@ -14,6 +15,7 @@ default_args = {
     "depends_on_past": False,
     "retries": 2,  # Retry si échec
     "retry_delay": timedelta(minutes=5),
+    "on_failure_callback": notify_failure
 }
 
 
