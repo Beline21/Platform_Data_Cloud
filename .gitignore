@@ -1,0 +1,4 @@
+# Ignorer les fichiers de données volumineux
+airflow/data/airflow/*.csv
+airflow/data/airflow/*.json
+airflow/data/airflow/*.zip
