@@ -167,7 +167,11 @@ def dvf_2025_dag():
 
         # Optional cleaning (keep bronze mostly raw but fix encoding issues)
         df["valeur_fonciere"] = df["valeur_fonciere"].str.replace(",", ".")
-        df["date_mutation"] = pd.to_datetime(df["date_mutation"], format="%d/%m/%Y", errors="coerce")
+        df["date_mutation"] = pd.to_datetime(
+                                 df["date_mutation"],
+                                 format="%d/%m/%Y",
+                                 errors="coerce"
+                              )
 
         engine = create_engine(
             "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
