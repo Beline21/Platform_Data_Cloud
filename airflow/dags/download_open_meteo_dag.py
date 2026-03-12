@@ -4,11 +4,9 @@ from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from datetime import datetime, timedelta
 from utils.notifications import notify_failure
 import requests
-import os
 import json
 import pandas as pd
 from sqlalchemy import create_engine
-from pathlib import Path
 
 
 # Volume Docker pour persistance
@@ -89,7 +87,9 @@ def open_meteo_berlin_dag():
             }
         )
 
-        engine = create_engine("postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse")
+        engine = create_engine(
+            "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
+        )
         df.to_sql(
             "meteo_quotidien",
             engine,
