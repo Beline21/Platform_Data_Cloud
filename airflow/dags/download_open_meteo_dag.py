@@ -7,10 +7,11 @@ import requests
 import json
 import pandas as pd
 from sqlalchemy import create_engine
+from pathlib import Path
 
 
 # Volume Docker pour persistance
-DATA_DIR = "/opt/airflow/output"
+DATA_DIR = Path("/opt/airflow/output")
 
 default_args = {
     "owner": "airflow",
