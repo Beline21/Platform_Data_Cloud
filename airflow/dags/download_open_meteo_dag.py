@@ -8,6 +8,7 @@ import os
 import json
 import pandas as pd
 from sqlalchemy import create_engine
+from pathlib import Path
 
 
 # Volume Docker pour persistance
@@ -51,10 +52,10 @@ def open_meteo_berlin_dag():
             "https://api.open-meteo.com/v1/forecast?"
             "latitude=52.52&longitude=13.41&hourly=temperature_2m"
         )
-        filename = os.path.join(DATA_DIR, "open_meteo_berlin.json")
+        filename = DATA_DIR / "open_meteo_berlin.json"
 
         # Créer le dossier si nécessaire
-        os.makedirs(DATA_DIR, exist_ok=True)
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
 
         # Requête HTTP
         response = requests.get(url)
@@ -75,23 +76,31 @@ def open_meteo_berlin_dag():
         if not src.exists():
             raise FileNotFoundError(f"Fichier non trouvé : {src}")
 
-        with open(filename) as f:
+        with open(src) as f:
             data = json.load(f)
 
         # Exemple : adapter selon la structure du JSON Open-Meteo
-        df = pd.DataFrame({
-            "col1": data["col1"],
-            "col2": data["col2"],
-            "col3": data["col3"],
-            "col4": data["col4"],
-        })
+        df = pd.DataFrame(
+            {
+                "col1": data["col1"],
+                "col2": data["col2"],
+                "col3": data["col3"],
+                "col4": data["col4"],
+            }
+        )
 
         engine = create_engine("postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse")
-        df.to_sql("meteo_quotidien", engine, schema="bronze", if_exists="append", index=False)
+        df.to_sql(
+            "meteo_quotidien",
+            engine,
+            schema="bronze",
+            if_exists="append",
+            index=False,
+        )
 
     # Tâches
     task_fetch = fetch_weather()
-    
+
     load_bronze = PythonOperator(
         task_id="load_to_bronze",
         python_callable=load_to_bronze,
