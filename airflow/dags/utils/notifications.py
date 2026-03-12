@@ -1,6 +1,7 @@
 import requests
 from airflow.models import TaskInstance
 
+
 def notify_failure(context: dict):
     """
     Fonction appelée par Airflow lorsqu'une tâche échoue.
@@ -12,9 +13,12 @@ def notify_failure(context: dict):
     ts = context.get('ts')  # horodatage Airflow
     state = context.get('task_instance').state
 
-    message = f":x: DAG `{dag_id}`, task `{task_id}` a échoué!\nRun: {run_id}\nTime: {ts}\nStatus: {state}"
+    message = (
+    f":x: DAG `{dag_id}`, task `{task_id}` a échoué!"
+    "\nRun: {run_id}\nTime: {ts}\nStatus: {state}"
+    )
 
-    webhook_url = "https://hooks.slack.com/services/XXXX/YYYY/ZZZZ"  # remplacer par ton webhook
+    webhook_url = "https://ntfy.sh/tp-airflow"
 
     try:
         requests.post(webhook_url, json={"text": message})
