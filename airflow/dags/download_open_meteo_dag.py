@@ -1,4 +1,4 @@
-from airflow.decorators import dag, task
+from airflow.sdk import dag, task
 from datetime import datetime, timedelta
 import requests
 import os
@@ -19,7 +19,7 @@ default_args = {
     dag_id="open_meteo_berlin",
     default_args=default_args,
     start_date=datetime(2026, 3, 1),
-    schedule_interval="@hourly",  # toutes les heures pour ce DAG
+    schedule="@hourly",  # toutes les heures pour ce DAG
     catchup=False,
     tags=["extraction", "meteo"],
 )
