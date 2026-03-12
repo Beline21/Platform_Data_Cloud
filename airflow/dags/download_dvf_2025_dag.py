@@ -145,25 +145,7 @@ def dvf_2025_dag():
             "Surface reelle bati",
             "Nombre pieces principales",
             "Surface terrain"
-        ]].rename(columns={
-            "Identifiant de document": "document_id",
-            "Reference document": "reference_document",
-            "No disposition": "disposition_id",
-            "Date mutation": "date_mutation",
-            "Nature mutation": "nature_mutation",
-            "Valeur fonciere": "valeur_fonciere",
-            "No voie": "numero_voie",
-            "Type de voie": "type_voie",
-            "Voie": "voie",
-            "Code postal": "code_postal",
-            "Commune": "commune",
-            "Code departement": "departement",
-            "Code commune": "code_commune",
-            "Type local": "type_local",
-            "Surface reelle bati": "surface_bati",
-            "Nombre pieces principales": "nb_pieces",
-            "Surface terrain": "surface_terrain"
-        })
+        ]]
 
         # Optional cleaning (keep bronze mostly raw but fix encoding issues)
         df["valeur_fonciere"] = df["valeur_fonciere"].str.replace(",", ".")
