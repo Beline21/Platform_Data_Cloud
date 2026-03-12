@@ -14,8 +14,8 @@ def notify_failure(context: dict):
     state = context.get('task_instance').state
 
     message = (
-    f":x: DAG `{dag_id}`, task `{task_id}` a échoué!"
-    "\nRun: {run_id}\nTime: {ts}\nStatus: {state}"
+        f":x: DAG `{dag_id}`, task `{task_id}` a échoué!"
+        f"\nRun: {run_id}\nTime: {ts}\nStatus: {state}"
     )
 
     webhook_url = "https://ntfy.sh/tp-airflow"
