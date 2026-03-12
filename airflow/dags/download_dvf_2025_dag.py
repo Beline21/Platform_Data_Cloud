@@ -53,7 +53,7 @@ SELECT
 
     "Surface terrain"::FLOAT AS surface_terrain
 
-FROM bronze.dvf_raw;
+FROM bronze.dvf_data;
 """
 
 
