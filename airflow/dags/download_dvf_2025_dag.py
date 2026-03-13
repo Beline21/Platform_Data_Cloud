@@ -52,11 +52,11 @@ SELECT
 
     COALESCE("Type de voie", '')::TEXT AS type_voie,
 
-    COALESCE(Voie, '')::TEXT AS voie,
+    COALESCE("Voie", '')::TEXT AS voie,
 
     COALESCE(NULLIF("Code postal", ''), '0')::INT AS code_postal,
 
-    COALESCE(Commune, '')::TEXT AS commune,
+    COALESCE("Commune", '')::TEXT AS commune,
 
     COALESCE(NULLIF("Code departement", ''), '0')::INT AS departement,
 
