@@ -158,6 +158,27 @@ def dvf_2025_dag():
         engine = create_engine(
             "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
         )
+
+        df = df.rename(columns={
+            "Identifiant de document": "identifiant_document",
+            "Reference document": "reference_document",
+            "No disposition": "no_disposition",
+            "Date mutation": "date_mutation",
+            "Nature mutation": "nature_mutation",
+            "Valeur fonciere": "valeur_fonciere",
+            "No voie": "no_voie",
+            "Type de voie": "type_voie",
+            "Voie": "voie",
+            "Code postal": "code_postal",
+            "Commune": "commune",
+            "Code departement": "code_departement",
+            "Code commune": "code_commune",
+            "Type local": "type_local",
+            "Surface reelle bati": "surface_reelle_bati",
+            "Nombre pieces principales": "nombre_pieces_principales",
+            "Surface terrain": "surface_terrain",
+        })
+
         df.to_sql(
             "dvf_data",
             engine,
