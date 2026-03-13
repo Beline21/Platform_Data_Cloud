@@ -174,7 +174,7 @@ def dvf_2025_dag():
         ]]
 
         # Optional cleaning (keep bronze mostly raw but fix encoding issues)
-        df["Valeur fonciere"] = df["Valeur fonciere"].str.replace(",", ".")
+        #df["Valeur fonciere"] = df["Valeur fonciere"].str.replace(",", ".")
         df["Date mutation"] = pd.to_datetime(
                                  df["Date mutation"],
                                  format="%d/%m/%Y",
