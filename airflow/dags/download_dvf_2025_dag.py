@@ -37,7 +37,7 @@ SELECT
     COALESCE(NULLIF("No disposition", ''), '0')::INT AS disposition_id,
 
     COALESCE(
-        TO_DATE(NULLIF("Date mutation", ''), 'DD/MM/YYYY'),
+        "Date mutation"::DATE,
         DATE '1900-01-01'
     ) AS date_mutation,
 
