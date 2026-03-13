@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: meteo_quotidien
+    columns:
+      - name: time
+        description: Date des données météo
+        tests:
+          - not_null
+  - name: dvf_mutations
+    columns:
+      - name: code_postal
+        tests:
+          - not_null

@@ -2,3 +2,6 @@
 airflow/data/airflow/*.csv
 airflow/data/airflow/*.json
 airflow/data/airflow/*.zip
+
+# Ignore le dossier de l'environnement virtuel
+.venv
