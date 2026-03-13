@@ -1,5 +1,5 @@
 from airflow.sdk import dag, task
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from datetime import datetime, timedelta
 from utils.notifications import notify_failure
@@ -30,28 +30,54 @@ DROP TABLE IF EXISTS silver.dvf;
 
 CREATE TABLE silver.dvf AS
 SELECT
-    "Identifiant de document" AS document_id,
-    "Reference document" AS reference_document,
-    "No disposition"::INT AS disposition_id,
 
-    TO_DATE("Date mutation", 'DD/MM/YYYY') AS date_mutation,
-    "Nature mutation" AS nature_mutation,
+    "Identifiant de document"::TEXT AS document_id,
+    COALESCE("Reference document", '')::TEXT AS reference_document,
 
-    REPLACE("Valeur fonciere", ',', '.')::NUMERIC AS valeur_fonciere,
+    COALESCE(NULLIF("No disposition", ''), '0')::INT AS disposition_id,
 
-    "No voie"::INT AS numero_voie,
-    "Type de voie" AS type_voie,
-    "Voie" AS voie,
+    COALESCE(
+        TO_DATE(NULLIF("Date mutation", ''), 'DD/MM/YYYY'),
+        DATE '1900-01-01'
+    ) AS date_mutation,
 
-    "Code postal"::INT AS code_postal,
-    "Commune" AS commune,
-    "Code departement" AS departement,
+    COALESCE("Nature mutation", '')::TEXT AS nature_mutation,
 
-    "Type local" AS type_local,
-    "Surface reelle bati"::FLOAT AS surface_bati,
-    "Nombre pieces principales"::INT AS nb_pieces,
+    COALESCE(
+        REPLACE(NULLIF("Valeur fonciere", ''), ',', '.')::NUMERIC,
+        0
+    ) AS valeur_fonciere,
 
-    "Surface terrain"::FLOAT AS surface_terrain
+    COALESCE(NULLIF("No voie", ''), '0')::INT AS numero_voie,
+
+    COALESCE("Type de voie", '')::TEXT AS type_voie,
+
+    COALESCE(Voie, '')::TEXT AS voie,
+
+    COALESCE(NULLIF("Code postal", ''), '0')::INT AS code_postal,
+
+    COALESCE(Commune, '')::TEXT AS commune,
+
+    COALESCE(NULLIF("Code departement", ''), '0')::INT AS departement,
+
+    COALESCE(NULLIF("Code commune", ''), '0')::INT AS code_commune,
+
+    COALESCE("Type local", '')::TEXT AS type_local,
+
+    COALESCE(
+        NULLIF("Surface reelle bati", '')::FLOAT,
+        0
+    ) AS surface_bati,
+
+    COALESCE(
+        NULLIF("Nombre pieces principales", '')::INT,
+        0
+    ) AS nb_pieces,
+
+    COALESCE(
+        NULLIF("Surface terrain", '')::FLOAT,
+        0
+    ) AS surface_terrain
 
 FROM bronze.dvf_data;
 """
@@ -159,31 +185,11 @@ def dvf_2025_dag():
             "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
         )
 
-        df = df.rename(columns={
-            "Identifiant de document": "identifiant_document",
-            "Reference document": "reference_document",
-            "No disposition": "no_disposition",
-            "Date mutation": "date_mutation",
-            "Nature mutation": "nature_mutation",
-            "Valeur fonciere": "valeur_fonciere",
-            "No voie": "no_voie",
-            "Type de voie": "type_voie",
-            "Voie": "voie",
-            "Code postal": "code_postal",
-            "Commune": "commune",
-            "Code departement": "code_departement",
-            "Code commune": "code_commune",
-            "Type local": "type_local",
-            "Surface reelle bati": "surface_reelle_bati",
-            "Nombre pieces principales": "nombre_pieces_principales",
-            "Surface terrain": "surface_terrain",
-        })
-
         df.to_sql(
             "dvf_data",
             engine,
             schema="bronze",
-            if_exists="append",
+            if_exists="replace",
             index=False,
         )
 

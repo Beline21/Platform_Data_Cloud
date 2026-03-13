@@ -1,5 +1,5 @@
 from airflow.sdk import dag, task
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from datetime import datetime, timedelta
 from utils.notifications import notify_failure
@@ -109,7 +109,7 @@ def open_meteo_berlin_dag():
             "meteo_quotidien",
             engine,
             schema="bronze",
-            if_exists="append",
+            if_exists="replace",
             index=False,
         )
 
