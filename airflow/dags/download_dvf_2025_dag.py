@@ -54,13 +54,13 @@ SELECT
 
     COALESCE("Voie", '')::TEXT AS voie,
 
-    COALESCE(NULLIF("Code postal", ''), '0')::INT AS code_postal,
+    COALESCE("Code postal", '')::TEXT AS code_postal,
 
     COALESCE("Commune", '')::TEXT AS commune,
 
-    COALESCE(NULLIF("Code departement", ''), '0')::INT AS departement,
+    COALESCE("Code departement", '')::TEXT AS departement,
 
-    COALESCE(NULLIF("Code commune", ''), '0')::INT AS code_commune,
+    COALESCE("Code commune", '')::INT AS code_commune,
 
     COALESCE("Type local", '')::TEXT AS type_local,
 
