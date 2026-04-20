@@ -24,18 +24,20 @@ default_args = {
 # Requête SQL pour transformer bronze -> silver
 TRANSFORM_METEO_SQL = """
 DROP TABLE IF EXISTS silver.meteo_quotidien;
+
 CREATE TABLE silver.meteo_quotidien AS
 SELECT
-    time::TIMESTAMP AS time,
+    TO_TIMESTAMP(time, 'YYYY-MM-DD"T"HH24:MI') AS time,
     COALESCE(temperature_2m::FLOAT, 0) AS temperature_2m,
     COALESCE(latitude::FLOAT, 0) AS latitude,
     COALESCE(longitude::FLOAT, 0) AS longitude,
     COALESCE(elevation::FLOAT, 0) AS elevation,
     COALESCE(generationtime_ms::FLOAT, 0) AS generationtime_ms,
-    COALESCE(utc_offset_seconds::INT, 0) AS utc_offset_seconds,
-    COALESCE(timezone::TEXT, '') AS timezone,
-    COALESCE(timezone_abbreviation::TEXT, '') AS timezone_abbreviation
+    COALESCE(timezone::TEXT, '') AS timezone
 FROM bronze.meteo_quotidien;
+
+ALTER TABLE silver.meteo_quotidien
+ADD COLUMN cle_primaire BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY;
 """
 
 
@@ -98,9 +100,6 @@ def open_meteo_berlin_dag():
         df["utc_offset_seconds"] = data["utc_offset_seconds"]
         df["timezone"] = data["timezone"]
         df["timezone_abbreviation"] = data["timezone_abbreviation"]
-
-        # Conversion datetime
-        df["time"] = pd.to_datetime(df["time"])
 
         engine = create_engine(
             "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"

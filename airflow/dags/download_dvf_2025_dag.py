@@ -26,15 +26,12 @@ default_args = {
 
 # Requête SQL pour transformer bronze -> silver
 TRANSFORM_DVF_SQL = """
-DROP TABLE IF EXISTS silver.dvf;
+DROP TABLE IF EXISTS silver.dvf_mutations;
 
-CREATE TABLE silver.dvf AS
+CREATE TABLE silver.dvf_mutations AS
 SELECT
 
-    "Identifiant de document"::TEXT AS document_id,
-    COALESCE("Reference document", '')::TEXT AS reference_document,
-
-    COALESCE(NULLIF("No disposition", ''), '0')::INT AS disposition_id,
+    "No disposition"::INT AS disposition_id,
 
     COALESCE(
         "Date mutation"::DATE,
@@ -44,13 +41,11 @@ SELECT
     COALESCE("Nature mutation", '')::TEXT AS nature_mutation,
 
     COALESCE(
-        REPLACE(NULLIF("Valeur fonciere", ''), ',', '.')::NUMERIC,
+        REPLACE("Valeur fonciere", ',', '.')::NUMERIC,
         0
     ) AS valeur_fonciere,
 
-    COALESCE(NULLIF("No voie", ''), '0')::INT AS numero_voie,
-
-    COALESCE("Type de voie", '')::TEXT AS type_voie,
+    COALESCE("No voie", '0')::INT AS numero_voie,
 
     COALESCE("Voie", '')::TEXT AS voie,
 
@@ -61,6 +56,12 @@ SELECT
     COALESCE("Code departement", '')::TEXT AS departement,
 
     COALESCE("Code commune", '')::INT AS code_commune,
+
+    COALESCE("Section", '')::TEXT AS section,
+
+    COALESCE("No plan", '0')::INT AS numero_plan,
+
+    COALESCE("Code type local", '')::TEXT AS code_type_local,
 
     COALESCE("Type local", '')::TEXT AS type_local,
 
@@ -74,12 +75,17 @@ SELECT
         0
     ) AS nb_pieces,
 
+    COALESCE("Nature culture", '')::TEXT AS nature_culture,
+
     COALESCE(
         NULLIF("Surface terrain", '')::FLOAT,
         0
     ) AS surface_terrain
 
-FROM bronze.dvf_data;
+FROM bronze.dvf_mutations;
+
+ALTER TABLE silver.dvf_mutations
+ADD COLUMN cle_primaire BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY;
 """
 
 
@@ -154,39 +160,34 @@ def dvf_2025_dag():
 
         # Select and rename useful columns
         df = df[[
-            "Identifiant de document",
-            "Reference document",
             "No disposition",
             "Date mutation",
             "Nature mutation",
             "Valeur fonciere",
             "No voie",
             "Type de voie",
+            "Code voie",
             "Voie",
             "Code postal",
             "Commune",
             "Code departement",
             "Code commune",
+            "Section",
+            "No plan",
+            "Code type local",
             "Type local",
             "Surface reelle bati",
             "Nombre pieces principales",
+            "Nature culture",
             "Surface terrain"
         ]]
-
-        # Optional cleaning (keep bronze mostly raw but fix encoding issues)
-        df["Valeur fonciere"] = df["Valeur fonciere"].str.replace(",", ".")
-        df["Date mutation"] = pd.to_datetime(
-                                 df["Date mutation"],
-                                 format="%d/%m/%Y",
-                                 errors="coerce"
-                              )
 
         engine = create_engine(
             "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
         )
 
         df.to_sql(
-            "dvf_data",
+            "dvf_mutations",
             engine,
             schema="bronze",
             if_exists="replace",

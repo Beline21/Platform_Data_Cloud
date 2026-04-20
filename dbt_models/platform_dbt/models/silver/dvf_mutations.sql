@@ -7,10 +7,9 @@
 
 select
 
-    "Identifiant de document"::TEXT AS document_id,
-    COALESCE("Reference document", '')::TEXT AS reference_document,
+    row_number() over () as cle_primaire,
 
-    COALESCE(NULLIF("No disposition", ''), '0')::INT AS disposition_id,
+    COALESCE("No disposition", 0)::INT AS disposition_id,
 
     COALESCE(
         "Date mutation"::DATE,
@@ -19,12 +18,12 @@ select
 
     COALESCE("Nature mutation", '')::TEXT AS nature_mutation,
 
-    COALESCE(NULLIF("Valeur fonciere", '')::NUMERIC
+    COALESCE(
+        REPLACE("Valeur fonciere", ',', '.')::NUMERIC,
+        0
     ) AS valeur_fonciere,
 
-    COALESCE(NULLIF("No voie", ''), '0')::INT AS numero_voie,
-
-    COALESCE("Type de voie", '')::TEXT AS type_voie,
+    COALESCE("No voie", '0')::INT AS numero_voie,
 
     COALESCE("Voie", '')::TEXT AS voie,
 
@@ -35,6 +34,12 @@ select
     COALESCE("Code departement", '')::TEXT AS departement,
 
     COALESCE("Code commune", '')::INT AS code_commune,
+
+    COALESCE("Section", '')::TEXT AS section,
+
+    COALESCE("No plan", '0)::INT AS numero_plan,
+
+    COALESCE("Code type local", '')::TEXT AS code_type_local,
 
     COALESCE("Type local", '')::TEXT AS type_local,
 
@@ -48,11 +53,13 @@ select
         0
     ) AS nb_pieces,
 
+    COALESCE("Nature culture", '')::TEXT AS nature_culture,
+
     COALESCE(
         NULLIF("Surface terrain", '')::FLOAT,
         0
     ) AS surface_terrain
 
-from {{ source('bronze', 'dvf_data') }}
+from {{ source('bronze', 'dvf_mutations') }}
 where "Valeur fonciere" is not null
-  and REPLACE(NULLIF("Valeur fonciere", ''), ',', '.')::NUMERIC > 0
+  and REPLACE("Valeur fonciere", ',', '.')::NUMERIC > 0

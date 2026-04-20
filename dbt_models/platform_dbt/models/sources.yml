@@ -6,7 +6,7 @@ sources:
     database: warehouse
     schema: bronze
     tables:
-      - name: dvf_data
+      - name: dvf_mutations
         description: Mutations DVF (Demandes de valeurs foncières), format pipe
       - name: meteo_quotidien
         description: Données météo quotidiennes Open-Meteo
