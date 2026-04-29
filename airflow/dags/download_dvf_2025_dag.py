@@ -34,8 +34,7 @@ SELECT
     "No disposition"::INT AS disposition_id,
 
     COALESCE(
-        "Date mutation"::DATE,
-        DATE '1900-01-01'
+        TO_DATE("Date mutation", 'DD/MM/YYYY')
     ) AS date_mutation,
 
     COALESCE("Nature mutation", '')::TEXT AS nature_mutation,
