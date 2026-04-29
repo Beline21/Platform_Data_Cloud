@@ -9,11 +9,10 @@ select
 
     row_number() over () as cle_primaire,
 
-    COALESCE("No disposition", 0)::INT AS disposition_id,
+    COALESCE("No disposition", '0')::INT AS disposition_id,
 
     COALESCE(
-        "Date mutation"::DATE,
-        DATE '1900-01-01'
+        TO_DATE("Date mutation", 'DD/MM/YYYY')
     ) AS date_mutation,
 
     COALESCE("Nature mutation", '')::TEXT AS nature_mutation,
@@ -37,7 +36,7 @@ select
 
     COALESCE("Section", '')::TEXT AS section,
 
-    COALESCE("No plan", '0)::INT AS numero_plan,
+    COALESCE("No plan", '0')::INT AS numero_plan,
 
     COALESCE("Code type local", '')::TEXT AS code_type_local,
 
@@ -62,4 +61,4 @@ select
 
 from {{ source('bronze', 'dvf_mutations') }}
 where "Valeur fonciere" is not null
-  and REPLACE("Valeur fonciere", ',', '.')::NUMERIC > 0
+  and REPLACE("Valeur fonciere"::text, ',', '.')::NUMERIC > 0

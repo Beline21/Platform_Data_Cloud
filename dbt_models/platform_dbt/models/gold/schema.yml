@@ -2,6 +2,7 @@ version: 2
 
 models:
   - name: fact_mutations
+    description: Test Code Commune non nul
     columns:
       - name: code_commune
         tests:

@@ -2,13 +2,16 @@ version: 2
 
 models:
   - name: meteo_quotidien
+    description: Tests Meteo Quotidienne
     columns:
       - name: time
-        description: Date des données météo
+        description: Date des données météo non nulles
         tests:
           - not_null
   - name: dvf_mutations
+    description: Tests DVF Mutations
     columns:
       - name: code_postal
+        description: Test Code Postal non nul
         tests:
           - not_null
