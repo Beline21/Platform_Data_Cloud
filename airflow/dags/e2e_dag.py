@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.utils.dates import days_ago
+# from airflow.utils.dates import days_ago
 
 # Importer vos fonctions existantes
 from download_open_meteo_dag import fetch_weather as fetch_meteo
@@ -20,8 +20,7 @@ DBT_PROJECT_DIR = "/opt/airflow/dbt"
 
 with DAG(
     dag_id="elt_e2e",
-    schedule_interval=None,
-    start_date=days_ago(1),
+    start_date=datetime(2026,3,1),
     tags=["e2e", "elt"],
 ) as dag:
 
