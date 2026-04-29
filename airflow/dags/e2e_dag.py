@@ -5,9 +5,15 @@ from airflow.utils.dates import days_ago
 
 # Importer vos fonctions existantes
 from download_open_meteo_dag import fetch_weather as fetch_meteo
-from download_open_meteo_dag import load_to_bronze as load_meteo_to_bronze
-from download_dvf_2025_dag import download_and_extract_dvf as fetch_dvf
-from download_dvf_2025_dag import load_to_bronze as load_dvf_to_bronze
+from download_open_meteo_dag import (
+load_to_bronze as load_meteo_to_bronze
+)
+from download_dvf_2025_dag import (
+download_and_extract_dvf as fetch_dvf
+)
+from download_dvf_2025_dag import (
+load_to_bronze as load_dvf_to_bronze
+)
 # from load_bronze import load_meteo_to_bronze, load_dvf_to_bronze
 
 DBT_PROJECT_DIR = "/opt/airflow/dbt"
@@ -46,4 +52,5 @@ with DAG(
         cwd=DBT_PROJECT_DIR,
     )
 
-    [extract_meteo, extract_dvf] >> [load_meteo, load_dvf] >> run_dbt >> dbt_test
+    ([extract_meteo, extract_dvf] >> [load_meteo, load_dvf]
+    >> run_dbt >> dbt_test)
