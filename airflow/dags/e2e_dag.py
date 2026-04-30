@@ -30,8 +30,10 @@ default_args = {
 }
 
 # ======================
-# METEO (copié tel quel sans @task)
+# METEO
 # ======================
+
+
 def fetch_meteo():
     url = (
         "https://api.open-meteo.com/v1/forecast?"
@@ -93,6 +95,8 @@ def load_meteo_to_bronze(**context):
 # ======================
 # DVF (copié tel quel sans @task)
 # ======================
+
+
 def fetch_dvf():
     url = (
         "https://www.data.gouv.fr/api/1/"
