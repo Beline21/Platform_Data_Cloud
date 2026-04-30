@@ -212,4 +212,5 @@ def dvf_2025_dag():
 
 
 # Instanciation du DAG
-dvf_2025_dag = dvf_2025_dag()
+if __name__ == "__main__":
+    dvf_2025_dag = dvf_2025_dag()
