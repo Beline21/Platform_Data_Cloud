@@ -131,5 +131,4 @@ def open_meteo_berlin_dag():
 
 
 # Instanciation du DAG
-if __name__ == "__main__":
-    open_meteo_berlin_dag()
+open_meteo_berlin_dag()
