@@ -10,6 +10,8 @@ import csv
 import pandas as pd
 from sqlalchemy import create_engine
 from pathlib import Path
+from airflow.hooks.base import BaseHook
+from airflow.models import Variable
 
 
 # Chemin où seront stockés les fichiers sur le volume Docker
@@ -101,10 +103,7 @@ def dvf_2025_dag():
     @task()
     def download_and_extract_dvf():
         # URL du fichier DVF 2025 (exemple, à remplacer par l’URL exacte)
-        url = (
-            "https://www.data.gouv.fr/api/1/"
-            "datasets/r/902db087-b0eb-4cbb-a968-0b499bde5bc4"
-        )
+        url = Variable.get("DVF_URL")
 
         # Crée le dossier si n’existe pas
         DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -181,8 +180,9 @@ def dvf_2025_dag():
             "Surface terrain"
         ]]
 
+        conn = BaseHook.get_connection("postgres_warehouse")
         engine = create_engine(
-            "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
+            f"postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}"
         )
 
         df.to_sql(

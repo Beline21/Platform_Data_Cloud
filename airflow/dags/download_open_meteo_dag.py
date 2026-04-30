@@ -8,6 +8,8 @@ import json
 import pandas as pd
 from sqlalchemy import create_engine
 from pathlib import Path
+from airflow.hooks.base import BaseHook
+from airflow.models import Variable
 
 
 # Volume Docker pour persistance
@@ -54,10 +56,7 @@ def open_meteo_berlin_dag():
     @task()
     def fetch_weather():
         # URL Open-Meteo pour Berlin (température horaire)
-        url = (
-            "https://api.open-meteo.com/v1/forecast?"
-            "latitude=52.52&longitude=13.41&hourly=temperature_2m"
-        )
+        url = Variable.get("METEO_URL")
         filename = DATA_DIR / "open_meteo_berlin.json"
 
         # Créer le dossier si nécessaire
@@ -101,8 +100,9 @@ def open_meteo_berlin_dag():
         df["timezone"] = data["timezone"]
         df["timezone_abbreviation"] = data["timezone_abbreviation"]
 
+        conn = BaseHook.get_connection("postgres_warehouse")
         engine = create_engine(
-            "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
+            f"postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}"
         )
         df.to_sql(
             "meteo_quotidien",

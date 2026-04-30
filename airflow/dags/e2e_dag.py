@@ -14,6 +14,8 @@ from sqlalchemy import create_engine
 from pathlib import Path
 
 from utils.notifications import notify_failure
+from airflow.hooks.base import BaseHook
+from airflow.models import Variable
 
 # ======================
 # CONFIG
@@ -35,10 +37,7 @@ default_args = {
 
 
 def fetch_meteo():
-    url = (
-        "https://api.open-meteo.com/v1/forecast?"
-        "latitude=52.52&longitude=13.41&hourly=temperature_2m"
-    )
+    url = Variable.get("METEO_URL")
 
     filename = DATA_DIR / "open_meteo_berlin.json"
 
@@ -79,8 +78,9 @@ def load_meteo_to_bronze(**context):
     df["timezone"] = data["timezone"]
     df["timezone_abbreviation"] = data["timezone_abbreviation"]
 
+    conn = BaseHook.get_connection("postgres_warehouse")
     engine = create_engine(
-        "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
+        f"postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}"
     )
 
     df.to_sql(
@@ -98,10 +98,7 @@ def load_meteo_to_bronze(**context):
 
 
 def fetch_dvf():
-    url = (
-        "https://www.data.gouv.fr/api/1/"
-        "datasets/r/902db087-b0eb-4cbb-a968-0b499bde5bc4"
-    )
+    url = Variable.get("DVF_URL")
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -173,8 +170,9 @@ def load_dvf_to_bronze(**context):
         "Surface terrain"
     ]]
 
+    conn = BaseHook.get_connection("postgres_warehouse")
     engine = create_engine(
-        "postgresql://svc_dwh:svc_dwh@postgres:5432/warehouse"
+        f"postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}"
     )
 
     df.to_sql(
