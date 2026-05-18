@@ -80,7 +80,10 @@ def load_meteo_to_bronze(**context):
 
     conn = BaseHook.get_connection("postgres_warehouse")
     engine = create_engine(
-        f"postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}"
+        (
+            f"postgresql://{conn.login}:{conn.password}"
+            f"@{conn.host}:{conn.port}/{conn.schema}"
+        )
     )
 
     df.to_sql(
@@ -172,7 +175,10 @@ def load_dvf_to_bronze(**context):
 
     conn = BaseHook.get_connection("postgres_warehouse")
     engine = create_engine(
-        f"postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}"
+        (
+            f"postgresql://{conn.login}:{conn.password}"
+            f"@{conn.host}:{conn.port}/{conn.schema}"
+        )
     )
 
     df.to_sql(

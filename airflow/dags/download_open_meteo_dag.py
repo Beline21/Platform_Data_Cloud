@@ -102,7 +102,10 @@ def open_meteo_berlin_dag():
 
         conn = BaseHook.get_connection("postgres_warehouse")
         engine = create_engine(
-            f"postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}"
+            (
+                f"postgresql://{conn.login}:{conn.password}"
+                f"@{conn.host}:{conn.port}/{conn.schema}"
+            )
         )
         df.to_sql(
             "meteo_quotidien",

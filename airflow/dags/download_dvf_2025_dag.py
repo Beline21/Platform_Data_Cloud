@@ -102,7 +102,7 @@ def dvf_2025_dag():
 
     @task()
     def download_and_extract_dvf():
-        # URL du fichier DVF 2025 (exemple, à remplacer par l’URL exacte)
+        # URL du fichier DVF 2025
         url = Variable.get("DVF_URL")
 
         # Crée le dossier si n’existe pas
@@ -182,7 +182,10 @@ def dvf_2025_dag():
 
         conn = BaseHook.get_connection("postgres_warehouse")
         engine = create_engine(
-            f"postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}"
+            (
+                f"postgresql://{conn.login}:{conn.password}"
+                f"@{conn.host}:{conn.port}/{conn.schema}"
+            )
         )
 
         df.to_sql(
