@@ -210,7 +210,7 @@ def put_dvf_to_raw_stage(**context):
     )
 
     local_path = (
-        Path(os.environ.get("DATA_DIR", "/opt/airflow/data"))
+        Path(os.environ.get("DATA_DIR", "/opt/airflow/output"))
         / "dvf_2025.csv"
     )
     if not local_path.exists():
@@ -251,7 +251,7 @@ def put_meteo_to_raw_stage(**context):
     )
 
     today = datetime.now().strftime("%Y-%m-%d")
-    data_dir = Path(os.environ.get("DATA_DIR", "/opt/airflow/data"))
+    data_dir = Path(os.environ.get("DATA_DIR", "/opt/airflow/output"))
     files = sorted(data_dir.glob("*.json"))
     local_path = files[-1] if files else None
     if not local_path:
