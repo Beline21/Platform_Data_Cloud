@@ -419,7 +419,30 @@ with DAG(
         conn_id="snowflake_platform",
         sql="""
             COPY INTO PLATFORM_DB.BRONZE.METEO
-            FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date=2026-06-15/
+            (
+                latitude,
+                longitude,
+                generationtime_ms,
+                utc_offset_seconds,
+                timezone,
+                timezone_abbreviation,
+                elevation,
+                hourly_units,
+                hourly
+            )
+            FROM (
+                SELECT
+                    $1:latitude::DOUBLE,
+                    $1:longitude::DOUBLE,
+                    $1:generationtime_ms::DOUBLE,
+                    $1:utc_offset_seconds::BIGINT,
+                    $1:timezone::VARCHAR,
+                    $1:timezone_abbreviation::VARCHAR,
+                    $1:elevation::DOUBLE,
+                    $1:hourly_units,
+                    $1:hourly
+                FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date=2026-06-15/
+            )
             FILE_FORMAT = (
                 TYPE = JSON
             )
