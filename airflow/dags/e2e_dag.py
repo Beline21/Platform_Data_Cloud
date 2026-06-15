@@ -377,8 +377,7 @@ with DAG(
         conn_id="snowflake_platform",
         sql="""
             CREATE TABLE IF NOT EXISTS PLATFORM_DB.BRONZE.METEO (
-                time                  VARCHAR,
-                temperature_2m        DOUBLE,
+                hourly                VARIANT,
                 latitude              DOUBLE,
                 longitude             DOUBLE,
                 elevation             DOUBLE,
