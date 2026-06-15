@@ -5,3 +5,9 @@ airflow/data/airflow/*.zip
 
 # Ignore le dossier de l'environnement virtuel
 .venv
+
+# Ignorer les fichiers terraform
+terraform.tfvars
+.terraform/
+*.tfstate
+*.tfstate.*

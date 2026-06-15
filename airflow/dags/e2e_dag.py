@@ -190,6 +190,69 @@ def load_dvf_to_bronze(**context):
     )
 
 
+def put_dvf_to_raw_stage(**context):
+    import snowflake.connector
+    from airflow.hooks.base import BaseHook
+    from pathlib import Path
+    import os
+
+    conn_info = BaseHook.get_connection("snowflake_platform")
+    extra = conn_info.extra_dejson
+
+    cnx = snowflake.connector.connect(
+        account=extra["account"],
+        user=conn_info.login,
+        password=conn_info.password,
+        warehouse=extra["warehouse"],
+        database=extra["database"],
+        schema="BRONZE",
+        role=extra.get("role", "ACCOUNTADMIN"),
+    )
+
+    local_path = Path(os.environ.get("DATA_DIR", "/opt/airflow/data")) / "dvf_2025.csv"
+    if not local_path.exists():
+        raise FileNotFoundError(f"Fichier non trouvé : {local_path}")
+
+    cursor = cnx.cursor()
+    # PUT dépose le fichier dans le stage avec un préfixe partitionné
+    cursor.execute(f"PUT file://{local_path} @PLATFORM_DB.BRONZE.RAW_STAGE/dvf/annee=2025/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
+    cursor.close()
+    cnx.close()
+
+
+def put_meteo_to_raw_stage(**context):
+    import snowflake.connector
+    from airflow.hooks.base import BaseHook
+    from pathlib import Path
+    from datetime import datetime
+    import os
+
+    conn_info = BaseHook.get_connection("snowflake_platform")
+    extra = conn_info.extra_dejson
+
+    cnx = snowflake.connector.connect(
+        account=extra["account"],
+        user=conn_info.login,
+        password=conn_info.password,
+        warehouse=extra["warehouse"],
+        database=extra["database"],
+        schema="BRONZE",
+        role=extra.get("role", "ACCOUNTADMIN"),
+    )
+
+    today = datetime.now().strftime("%Y-%m-%d")
+    data_dir = Path(os.environ.get("DATA_DIR", "/opt/airflow/data"))
+    files = sorted(data_dir.glob("*.json"))
+    local_path = files[-1] if files else None
+    if not local_path:
+        raise FileNotFoundError("Aucun fichier météo trouvé")
+
+    cursor = cnx.cursor()
+    cursor.execute(f"PUT file://{local_path} @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date={today}/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
+    cursor.close()
+    cnx.close()
+
+
 # ======================
 # DAG
 # ======================
@@ -232,9 +295,20 @@ with DAG(
         cwd=DBT_PROJECT_DIR,
     )
 
+    dvf_to_raw_stage = PythonOperator(
+        task_id="e2e_dvf_to_raw_stage",
+        python_callable=put_dvf_to_raw_stage,
+    )
+
+    meteo_to_raw_stage = PythonOperator(
+        task_id="e2e_meteo_to_raw_stage",
+        python_callable=put_meteo_to_raw_stage,
+    )
+
     chain(
         [extract_meteo, extract_dvf],
         [load_meteo, load_dvf],
         run_dbt,
-        dbt_test
+        dbt_test,
+        [dvf_to_raw_stage, meteo_to_raw_stage]
     )
