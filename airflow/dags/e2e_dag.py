@@ -97,7 +97,7 @@ def load_meteo_to_bronze(**context):
 
 
 # ======================
-# DVF (copié tel quel sans @task)
+# DVF
 # ======================
 
 
@@ -146,7 +146,7 @@ def load_dvf_to_bronze(**context):
 
     df = pd.read_csv(
         src,
-        sep=",",
+        sep="|",
         dtype=str,
         low_memory=False
     )
