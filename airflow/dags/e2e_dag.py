@@ -327,7 +327,7 @@ with DAG(
     # Créer la table bronze DVF (si elle n'existe pas)
     create_dvf_bronze = SQLExecuteQueryOperator(
         task_id="create_dvf_bronze_table",
-        snowflake_conn_id="snowflake_platform",
+        conn_id="snowflake_platform",
         sql="""
             CREATE TABLE IF NOT EXISTS PLATFORM_DB.BRONZE.DVF_MUTATIONS (
                 "No disposition"            INTEGER,
@@ -357,7 +357,7 @@ with DAG(
     # COPY INTO depuis le stage (format CSV pipe)
     copy_dvf_bronze = SQLExecuteQueryOperator(
         task_id="copy_dvf_to_bronze",
-        snowflake_conn_id="snowflake_platform",
+        conn_id="snowflake_platform",
         sql="""
             COPY INTO PLATFORM_DB.BRONZE.DVF_MUTATIONS
             FROM @PLATFORM_DB.BRONZE.RAW_STAGE/dvf/annee=2025/
@@ -374,7 +374,7 @@ with DAG(
     # Créer la table bronze Meteo (si elle n'existe pas)
     create_meteo_bronze = SQLExecuteQueryOperator(
         task_id="create_meteo_bronze_table",
-        snowflake_conn_id="snowflake_platform",
+        conn_id="snowflake_platform",
         sql="""
             CREATE TABLE IF NOT EXISTS PLATFORM_DB.BRONZE.METEO (
                 time                  VARCHAR,
@@ -393,7 +393,7 @@ with DAG(
     # COPY INTO depuis le stage (format JSON pipe)
     copy_meteo_bronze = SQLExecuteQueryOperator(
         task_id="copy_meteo_to_bronze",
-        snowflake_conn_id="snowflake_platform",
+        conn_id="snowflake_platform",
         sql="""
             COPY INTO PLATFORM_DB.BRONZE.METEO
             FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date=2026-06-15/
