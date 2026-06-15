@@ -411,5 +411,5 @@ with DAG(
         dbt_test,
         [dvf_to_raw_stage, meteo_to_raw_stage],
         [create_dvf_bronze, create_meteo_bronze],
-        [copy_dvf_bronze, copy_meteo_bronze]
+        # [copy_dvf_bronze, copy_meteo_bronze]
     )
