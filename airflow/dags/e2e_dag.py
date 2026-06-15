@@ -251,11 +251,12 @@ def put_meteo_to_raw_stage(**context):
     )
 
     today = datetime.now().strftime("%Y-%m-%d")
-    data_dir = Path(os.environ.get("DATA_DIR", "/opt/airflow/output"))
-    files = sorted(data_dir.glob("*.json"))
-    local_path = files[-1] if files else None
-    if not local_path:
-        raise FileNotFoundError("Aucun fichier météo trouvé")
+    local_path = (
+        Path(os.environ.get("DATA_DIR", "/opt/airflow/output"))
+        / "open_meteo_berlin.json"
+    )
+    if not local_path.exists():
+        raise FileNotFoundError(f"Fichier non trouvé : {local_path}")
 
     cursor = cnx.cursor()
     cursor.execute(
