@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.models.baseoperator import chain
 from datetime import datetime, timedelta
 
@@ -325,7 +325,7 @@ with DAG(
     )
 
     # Créer la table bronze DVF (si elle n'existe pas)
-    create_dvf_bronze = SnowflakeOperator(
+    create_dvf_bronze = SQLExecuteQueryOperator(
         task_id="create_dvf_bronze_table",
         snowflake_conn_id="snowflake_platform",
         sql="""
@@ -355,7 +355,7 @@ with DAG(
         )
 
     # COPY INTO depuis le stage (format CSV pipe)
-    copy_dvf_bronze = SnowflakeOperator(
+    copy_dvf_bronze = SQLExecuteQueryOperator(
         task_id="copy_dvf_to_bronze",
         snowflake_conn_id="snowflake_platform",
         sql="""
@@ -372,7 +372,7 @@ with DAG(
     )
 
     # Créer la table bronze Meteo (si elle n'existe pas)
-    create_meteo_bronze = SnowflakeOperator(
+    create_meteo_bronze = SQLExecuteQueryOperator(
         task_id="create_meteo_bronze_table",
         snowflake_conn_id="snowflake_platform",
         sql="""
@@ -391,7 +391,7 @@ with DAG(
         )
 
     # COPY INTO depuis le stage (format JSON pipe)
-    copy_meteo_bronze = SnowflakeOperator(
+    copy_meteo_bronze = SQLExecuteQueryOperator(
         task_id="copy_meteo_to_bronze",
         snowflake_conn_id="snowflake_platform",
         sql="""
