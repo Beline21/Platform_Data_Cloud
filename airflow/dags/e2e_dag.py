@@ -259,9 +259,12 @@ def put_meteo_to_raw_stage(**context):
 
     cursor = cnx.cursor()
     cursor.execute(
-        f"PUT file://{local_path}"
-        f"@PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date={today}/"
-        "AUTO_COMPRESS=FALSE OVERWRITE=TRUE"
+        f"""
+        PUT file://{local_path}
+        @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date={today}/
+        "AUTO_COMPRESS=FALSE
+        OVERWRITE=TRUE
+        """
     )
     cursor.close()
     cnx.close()
