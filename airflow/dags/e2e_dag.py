@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
+from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from airflow.models.baseoperator import chain
 from datetime import datetime, timedelta
 
@@ -263,7 +264,7 @@ def put_meteo_to_raw_stage(**context):
         f"""
         PUT file://{local_path}
         @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date={today}/
-        "AUTO_COMPRESS=FALSE
+        AUTO_COMPRESS=FALSE
         OVERWRITE=TRUE
         """
     )
@@ -323,10 +324,92 @@ with DAG(
         python_callable=put_meteo_to_raw_stage,
     )
 
+    # Créer la table bronze DVF (si elle n'existe pas)
+    create_dvf_bronze = SnowflakeOperator(
+        task_id="create_dvf_bronze_table",
+        snowflake_conn_id="snowflake_platform",
+        sql="""
+            CREATE TABLE IF NOT EXISTS PLATFORM_DB.BRONZE.DVF_MUTATIONS (
+                "No disposition"            INTEGER,
+                "Date mutation"             DATE,
+                "Nature mutation"           VARCHAR,
+                "Valeur fonciere"           NUMBER,
+                "No voie"                   INTEGER,
+                "Type de voie"              VARCHAR,
+                "Code voie"                 VARCHAR,
+                "Voie"                      VARCHAR,
+                "Code postal"               VARCHAR,
+                "Commune"                   VARCHAR,
+                "Code departement"          VARCHAR,
+                "Code commune"              INTEGER,
+                "Section"                   VARCHAR,
+                "No plan"                   INTEGER,
+                "Code type local"           VARCHAR,
+                "Type local"                VARCHAR,
+                "Surface reelle bati"       DOUBLE,
+                "Nombre pieces principales" INTEGER,
+                "Nature culture"            VARCHAR,
+                "Surface terrain"           DOUBLE
+                )
+            """,
+        )
+
+    # COPY INTO depuis le stage (format CSV pipe)
+    copy_dvf_bronze = SnowflakeOperator(
+        task_id="copy_dvf_to_bronze",
+        snowflake_conn_id="snowflake_platform",
+        sql="""
+            COPY INTO PLATFORM_DB.BRONZE.DVF_MUTATIONS
+            FROM @PLATFORM_DB.BRONZE.RAW_STAGE/dvf/annee=2025/
+            FILE_FORMAT = (
+                TYPE = CSV
+                FIELD_DELIMITER = '|'
+                SKIP_HEADER = 1
+                NULL_IF = ('', 'NULL')
+            )
+            ON_ERROR = 'CONTINUE'
+        """,
+    )
+
+    # Créer la table bronze Meteo (si elle n'existe pas)
+    create_meteo_bronze = SnowflakeOperator(
+        task_id="create_meteo_bronze_table",
+        snowflake_conn_id="snowflake_platform",
+        sql="""
+            CREATE TABLE IF NOT EXISTS PLATFORM_DB.BRONZE.METEO (
+                time                  VARCHAR,
+                temperature_2m        DOUBLE,
+                latitude              DOUBLE,
+                longitude             DOUBLE,
+                elevation             DOUBLE,
+                generationtime_ms     DOUBLE,
+                utc_offset_seconds    BIGINT,
+                timezone              VARCHAR,
+                timezone_abbreviation VARCHAR
+                )
+            """,
+        )
+
+    # COPY INTO depuis le stage (format JSON pipe)
+    copy_meteo_bronze = SnowflakeOperator(
+        task_id="copy_meteo_to_bronze",
+        snowflake_conn_id="snowflake_platform",
+        sql="""
+            COPY INTO PLATFORM_DB.BRONZE.METEO
+            FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date=2026-06-15/
+            FILE_FORMAT = (
+                TYPE = JSON
+            )
+            ON_ERROR = 'CONTINUE'
+        """,
+    )
+
     chain(
         [extract_meteo, extract_dvf],
         [load_meteo, load_dvf],
         run_dbt,
         dbt_test,
-        [dvf_to_raw_stage, meteo_to_raw_stage]
+        [dvf_to_raw_stage, meteo_to_raw_stage],
+        [create_dvf_bronze, create_meteo_bronze],
+        [copy_dvf_bronze, copy_meteo_bronze]
     )
