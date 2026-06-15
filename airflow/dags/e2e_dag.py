@@ -209,13 +209,23 @@ def put_dvf_to_raw_stage(**context):
         role=extra.get("role", "ACCOUNTADMIN"),
     )
 
-    local_path = Path(os.environ.get("DATA_DIR", "/opt/airflow/data")) / "dvf_2025.csv"
+    local_path = (
+        Path(os.environ.get("DATA_DIR", "/opt/airflow/data"))
+        / "dvf_2025.csv"
+    )
     if not local_path.exists():
         raise FileNotFoundError(f"Fichier non trouvé : {local_path}")
 
     cursor = cnx.cursor()
     # PUT dépose le fichier dans le stage avec un préfixe partitionné
-    cursor.execute(f"PUT file://{local_path} @PLATFORM_DB.BRONZE.RAW_STAGE/dvf/annee=2025/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
+    cursor.execute(
+        f"""
+        PUT file://{local_path}
+        @PLATFORM_DB.BRONZE.RAW_STAGE/dvf/annee=2025/
+        AUTO_COMPRESS=FALSE
+        OVERWRITE=TRUE
+        """
+    )
     cursor.close()
     cnx.close()
 
@@ -248,7 +258,11 @@ def put_meteo_to_raw_stage(**context):
         raise FileNotFoundError("Aucun fichier météo trouvé")
 
     cursor = cnx.cursor()
-    cursor.execute(f"PUT file://{local_path} @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date={today}/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
+    cursor.execute(
+        f"PUT file://{local_path}"
+        f"@PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date={today}/"
+        "AUTO_COMPRESS=FALSE OVERWRITE=TRUE"
+    )
     cursor.close()
     cnx.close()
 
