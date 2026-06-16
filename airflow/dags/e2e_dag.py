@@ -146,7 +146,7 @@ def load_dvf_to_bronze(**context):
 
     df = pd.read_csv(
         src,
-        sep="|",
+        sep=",",
         dtype=str,
         low_memory=False
     )
