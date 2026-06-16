@@ -386,7 +386,7 @@ with DAG(
             FROM @PLATFORM_DB.BRONZE.RAW_STAGE/dvf/annee=2025/
             FILE_FORMAT = (
                 TYPE = CSV
-                FIELD_DELIMITER = '|'
+                FIELD_DELIMITER = ','
                 SKIP_HEADER = 1
                 NULL_IF = ('', 'NULL')
             )
@@ -441,7 +441,7 @@ with DAG(
                     $1:elevation::DOUBLE,
                     $1:hourly_units,
                     $1:hourly
-                FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date=2026-06-15/
+                FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date=2026-06-16/
             )
             FILE_FORMAT = (
                 TYPE = JSON
