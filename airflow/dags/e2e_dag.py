@@ -453,9 +453,9 @@ with DAG(
     chain(
         [extract_meteo, extract_dvf],
         [load_meteo, load_dvf],
-        run_dbt,
-        dbt_test,
         [dvf_to_raw_stage, meteo_to_raw_stage],
         [create_dvf_bronze, create_meteo_bronze],
-        [copy_dvf_bronze, copy_meteo_bronze]
+        [copy_dvf_bronze, copy_meteo_bronze],
+        run_dbt,
+        dbt_test
     )
