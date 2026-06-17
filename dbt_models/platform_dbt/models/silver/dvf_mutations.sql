@@ -12,7 +12,7 @@ select
     COALESCE("No disposition", '0')::INT AS disposition_id,
 
     COALESCE(
-        TRY_TO_DATE("Date mutation", 'DD/MM/YYYY')
+        TRY_TO_DATE("Date mutation")
     ) AS date_mutation,
 
     COALESCE("Nature mutation", '')::TEXT AS nature_mutation,

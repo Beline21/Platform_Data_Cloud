@@ -18,25 +18,35 @@ WITH source AS (
 
 ),
 
-meteo AS (
+exploded AS (
 
     SELECT
-        ROW_NUMBER() OVER () AS cle_primaire,
+        f.index AS idx,
+        f.value AS time_value,
 
-        hourly.value:time::TIMESTAMP AS time,
-
-        hourly.value:temperature_2m::FLOAT AS temperature_2m,
-
-        latitude::FLOAT AS latitude,
-        longitude::FLOAT AS longitude,
-        elevation::FLOAT AS elevation,
-        generationtime_ms::FLOAT AS generationtime_ms,
-        timezone::TEXT AS timezone
+        hourly,
+        latitude,
+        longitude,
+        elevation,
+        generationtime_ms,
+        timezone
 
     FROM source,
-    LATERAL FLATTEN(input => hourly:time) hourly
+    LATERAL FLATTEN(input => hourly:time) f
 
 )
 
-SELECT *
-FROM meteo
+SELECT
+
+    ROW_NUMBER() OVER (ORDER BY idx) AS cle_primaire,
+
+    time_value::TIMESTAMP AS time,
+    hourly:temperature_2m::FLOAT AS temperature_2m,
+
+    latitude::FLOAT AS latitude,
+    longitude::FLOAT AS longitude,
+    elevation::FLOAT AS elevation,
+    generationtime_ms::FLOAT AS generationtime_ms,
+    timezone::TEXT AS timezone
+
+FROM exploded
