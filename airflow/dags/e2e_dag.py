@@ -304,13 +304,13 @@ with DAG(
 
     run_dbt = BashOperator(
         task_id="e2e_run_dbt",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run",
+        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --target snowflake",
         cwd=DBT_PROJECT_DIR,
     )
 
     dbt_test = BashOperator(
         task_id="e2e_dbt_test",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt test",
+        bash_command=f"cd {DBT_PROJECT_DIR} && dbt test --target snowflake",
         cwd=DBT_PROJECT_DIR,
     )
 
