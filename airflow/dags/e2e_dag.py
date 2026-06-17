@@ -387,6 +387,7 @@ with DAG(
             FILE_FORMAT = (
                 TYPE = CSV
                 FIELD_DELIMITER = ','
+                FIELD_OPTIONALLY_ENCLOSED_BY = '"'
                 SKIP_HEADER = 1
                 NULL_IF = ('', 'NULL')
             )
