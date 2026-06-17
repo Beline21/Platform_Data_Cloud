@@ -152,3 +152,13 @@ resource "snowflake_grant_privileges_to_account_role" "engineer_raw_stage" {
     object_name = "\"${snowflake_database.platform_db.name}\".\"${snowflake_schema.bronze.name}\".\"${snowflake_stage.raw_stage.name}\""
   }
 }
+
+resource "local_file" "dbt_env" {
+  filename = "../../dbt_models/platform_dbt/.env"
+
+  content = <<EOF
+SNOWFLAKE_ACCOUNT=${var.snowflake_organization}-${var.snowflake_account}
+SNOWFLAKE_USER=${var.snowflake_user}
+SNOWFLAKE_PASSWORD=${var.snowflake_password}
+EOF
+}

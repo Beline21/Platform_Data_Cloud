@@ -11,3 +11,5 @@ terraform.tfvars
 .terraform/
 *.tfstate
 *.tfstate.*
+
+dbt_models/platform_dbt/profiles.yml
