@@ -10,7 +10,7 @@ select
     row_number() over (ORDER BY "Date mutation") as cle_primaire,
 
     COALESCE(
-        NULLIF("No disposition", '')::INT
+        NULLIF("No disposition", '')::INT,
         0
     ) AS disposition_id,
 
@@ -27,7 +27,7 @@ select
     ) AS valeur_fonciere,
 
     COALESCE(
-        NULLIF("No voie", '')::INT
+        NULLIF("No voie", '')::INT,
         0
     ) AS numero_voie,
 
@@ -42,12 +42,12 @@ select
     COALESCE(
         NULLIF("Code commune", '')::INT,
         0
-    AS code_commune,
+   )  AS code_commune,
 
     COALESCE("Section", '')::TEXT AS section,
 
     COALESCE(
-        NULLIF("No plan", '')::INT
+        NULLIF("No plan", '')::INT,
         0
     ) AS numero_plan,
 
