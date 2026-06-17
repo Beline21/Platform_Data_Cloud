@@ -399,7 +399,7 @@ with DAG(
         task_id="create_meteo_bronze_table",
         conn_id="snowflake_platform",
         sql="""
-            CREATE TABLE IF NOT EXISTS PLATFORM_DB.BRONZE.METEO (
+            CREATE TABLE IF NOT EXISTS PLATFORM_DB.BRONZE.METEO_QUOTIDIEN (
                 latitude              DOUBLE,
                 longitude             DOUBLE,
                 generationtime_ms     DOUBLE,
@@ -418,7 +418,7 @@ with DAG(
         task_id="copy_meteo_to_bronze",
         conn_id="snowflake_platform",
         sql="""
-            COPY INTO PLATFORM_DB.BRONZE.METEO
+            COPY INTO PLATFORM_DB.BRONZE.METEO_QUOTIDIEN
             (
                 latitude,
                 longitude,
@@ -441,7 +441,7 @@ with DAG(
                     $1:elevation::DOUBLE,
                     $1:hourly_units,
                     $1:hourly
-                FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date=2026-06-16/
+                FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date=2026-06-17/
             )
             FILE_FORMAT = (
                 TYPE = JSON
