@@ -9,4 +9,14 @@ platform_dbt:
       threads: 2
       type: postgres
       user: "{{ env_var('POSTGRES_USER', 'svc_dwh') }}"
+    snowflake:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "ACCOUNTADMIN"
+      warehouse: "PLATFORM_WH"
+      database: "PLATFORM_DB"
+      schema: "SILVER"
+      threads: 2
   target: dev
