@@ -7,12 +7,12 @@
 
 select
 
-    row_number() over () as cle_primaire,
+    row_number() over (ORDER BY "Date mutation") as cle_primaire,
 
     COALESCE("No disposition", '0')::INT AS disposition_id,
 
     COALESCE(
-        TO_DATE("Date mutation", 'DD/MM/YYYY')
+        TRY_TO_DATE("Date mutation", 'DD/MM/YYYY')
     ) AS date_mutation,
 
     COALESCE("Nature mutation", '')::TEXT AS nature_mutation,
