@@ -41,7 +41,7 @@ SELECT
     ROW_NUMBER() OVER (ORDER BY idx) AS cle_primaire,
 
     time_value::TIMESTAMP AS time,
-    hourly:temperature_2m::FLOAT AS temperature_2m,
+    hourly['temperature_2m'][idx]::FLOAT AS temperature_2m,
 
     latitude::FLOAT AS latitude,
     longitude::FLOAT AS longitude,

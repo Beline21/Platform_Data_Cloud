@@ -9,10 +9,14 @@ select
 
     row_number() over (ORDER BY "Date mutation") as cle_primaire,
 
-    COALESCE("No disposition", '0')::INT AS disposition_id,
+    COALESCE(
+        NULLIF("No disposition", '')::INT
+        0
+    ) AS disposition_id,
 
     COALESCE(
-        TRY_TO_DATE("Date mutation")
+        TRY_TO_DATE("Date mutation"),
+        TRY_TO_DATE('1900-01-01')
     ) AS date_mutation,
 
     COALESCE("Nature mutation", '')::TEXT AS nature_mutation,
@@ -22,7 +26,10 @@ select
         0
     ) AS valeur_fonciere,
 
-    COALESCE("No voie", '0')::INT AS numero_voie,
+    COALESCE(
+        NULLIF("No voie", '')::INT
+        0
+    ) AS numero_voie,
 
     COALESCE("Voie", '')::TEXT AS voie,
 
@@ -32,11 +39,17 @@ select
 
     COALESCE("Code departement", '')::TEXT AS departement,
 
-    COALESCE("Code commune", '')::INT AS code_commune,
+    COALESCE(
+        NULLIF("Code commune", '')::INT,
+        0
+    AS code_commune,
 
     COALESCE("Section", '')::TEXT AS section,
 
-    COALESCE("No plan", '0')::INT AS numero_plan,
+    COALESCE(
+        NULLIF("No plan", '')::INT
+        0
+    ) AS numero_plan,
 
     COALESCE("Code type local", '')::TEXT AS code_type_local,
 
