@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: bronze
     description: Données brutes chargées en séance 3
-    database: warehouse
+    database: PLATFORM_DB
     schema: bronze
     tables:
       - name: dvf_mutations
