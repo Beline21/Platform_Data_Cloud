@@ -3,7 +3,7 @@ from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.utils.dates import days_ago
-from e2e_dag import (
+from utils.ingestion import (
     fetch_meteo,
     fetch_dvf,
     put_meteo_to_raw_stage,
