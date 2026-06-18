@@ -442,7 +442,7 @@ with DAG(
                     $1:elevation::DOUBLE,
                     $1:hourly_units,
                     $1:hourly
-                FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date=2026-06-17/
+                FROM @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date={{ ds }}/
             )
             FILE_FORMAT = (
                 TYPE = JSON
