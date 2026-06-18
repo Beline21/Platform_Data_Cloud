@@ -175,4 +175,3 @@ with DAG(
         >> [copy_dvf, copy_meteo]
         >> run_dbt
     )
-
