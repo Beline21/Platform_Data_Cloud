@@ -10,7 +10,7 @@ select
     row_number() over (ORDER BY "Date mutation") as cle_primaire,
 
     COALESCE(
-        NULLIF("No disposition", '')::INT,
+        TRY_TO_NUMBER("No disposition"),
         0
     ) AS disposition_id,
 
@@ -29,7 +29,7 @@ select
     ) AS valeur_fonciere,
 
     COALESCE(
-        NULLIF("No voie", '')::INT,
+        TRY_TO_NUMBER("No voie"),
         0
     ) AS numero_voie,
 
@@ -42,14 +42,14 @@ select
     COALESCE("Code departement", '')::TEXT AS departement,
 
     COALESCE(
-        NULLIF("Code commune", '')::INT,
+        TRY_TO_NUMBER("Code commune"),
         0
    )  AS code_commune,
 
     COALESCE("Section", '')::TEXT AS section,
 
     COALESCE(
-        NULLIF("No plan", '')::INT,
+        TRY_TO_NUMBER("No plan"),
         0
     ) AS numero_plan,
 
@@ -58,22 +58,30 @@ select
     COALESCE("Type local", '')::TEXT AS type_local,
 
     COALESCE(
-        NULLIF("Surface reelle bati", '')::FLOAT,
+        TRY_TO_DOUBLE(
+            REPLACE("Surface reelle bati", ',', '.')
+        ),
         0
     ) AS surface_bati,
 
     COALESCE(
-        NULLIF("Nombre pieces principales", '')::INT,
+        TRY_TO_NUMBER("Nombre pieces principales"),
         0
     ) AS nb_pieces,
 
     COALESCE("Nature culture", '')::TEXT AS nature_culture,
 
     COALESCE(
-        NULLIF("Surface terrain", '')::FLOAT,
+        TRY_TO_DOUBLE(
+            REPLACE("Surface terrain", ',', '.')
+        ),
         0
     ) AS surface_terrain
 
 from {{ source('bronze', 'dvf_mutations') }}
-where "Valeur fonciere" is not null
-  and REPLACE("Valeur fonciere"::text, ',', '.')::NUMERIC > 0
+where COALESCE(
+          TRY_TO_DECIMAL(
+              REPLACE("Valeur fonciere", ',', '.')
+          ),
+          0
+      ) > 0
