@@ -63,7 +63,6 @@ def fetch_dvf():
 
     zip_path = DATA_DIR / "dvf_2025.zip"
 
-
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -71,25 +70,20 @@ def fetch_dvf():
             f"Erreur téléchargement DVF : {response.status_code}"
         )
 
-
     with open(zip_path, "wb") as f:
         f.write(response.content)
 
-
     with zipfile.ZipFile(zip_path) as z:
         z.extractall(DATA_DIR)
-
 
     txt_file = [
         f for f in os.listdir(DATA_DIR)
         if f.endswith(".txt")
     ][0]
 
-
     txt_path = DATA_DIR / txt_file
 
     csv_path = DATA_DIR / "dvf_2025.csv"
-
 
     with open(
         txt_path,
@@ -103,7 +97,6 @@ def fetch_dvf():
         encoding="utf-8"
     ) as csv_f:
 
-
         reader = csv.reader(
             txt_f,
             delimiter="|"
@@ -113,17 +106,13 @@ def fetch_dvf():
             csv_f
         )
 
-
         for row in reader:
             writer.writerow(row)
-
 
     os.remove(zip_path)
     os.remove(txt_path)
 
-
     return f"CSV généré : {csv_path}"
-
 
 
 # ======================
@@ -134,13 +123,11 @@ def put_dvf_to_raw_stage():
 
     import snowflake.connector
 
-
     conn_info = BaseHook.get_connection(
         "snowflake_platform"
     )
 
     extra = conn_info.extra_dejson
-
 
     cnx = snowflake.connector.connect(
         account=extra["account"],
@@ -155,15 +142,12 @@ def put_dvf_to_raw_stage():
         ),
     )
 
-
     local_path = (
         DATA_DIR /
         "dvf_2025.csv"
     )
 
-
     cursor = cnx.cursor()
-
 
     cursor.execute(
         f"""
@@ -174,23 +158,19 @@ def put_dvf_to_raw_stage():
         """
     )
 
-
     cursor.close()
     cnx.close()
-
 
 
 def put_meteo_to_raw_stage():
 
     import snowflake.connector
 
-
     conn_info = BaseHook.get_connection(
         "snowflake_platform"
     )
 
     extra = conn_info.extra_dejson
-
 
     cnx = snowflake.connector.connect(
         account=extra["account"],
@@ -205,20 +185,16 @@ def put_meteo_to_raw_stage():
         ),
     )
 
-
     today = datetime.now().strftime(
         "%Y-%m-%d"
     )
-
 
     local_path = (
         DATA_DIR /
         "open_meteo_berlin.json"
     )
 
-
     cursor = cnx.cursor()
-
 
     cursor.execute(
         f"""
@@ -228,7 +204,6 @@ def put_meteo_to_raw_stage():
         OVERWRITE=TRUE
         """
     )
-
 
     cursor.close()
     cnx.close()
