@@ -22,7 +22,9 @@ select
     COALESCE("Nature mutation", '')::TEXT AS nature_mutation,
 
     COALESCE(
-        REPLACE("Valeur fonciere", ',', '.')::NUMERIC,
+        TRY_TO_DECIMAL(
+            REPLACE("Valeur fonciere", ',', '.')
+        ),
         0
     ) AS valeur_fonciere,
 

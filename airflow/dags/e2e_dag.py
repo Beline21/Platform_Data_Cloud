@@ -340,7 +340,7 @@ with DAG(
                 "No disposition"             INTEGER,
                 "Date mutation"              DATE,
                 "Nature mutation"            VARCHAR,
-                "Valeur fonciere"            NUMBER,
+                "Valeur fonciere"            VARCHAR,
                 "No voie"                    INTEGER,
                 "B/T/Q"                      VARCHAR,
                 "Type de voie"               VARCHAR,
