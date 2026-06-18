@@ -24,7 +24,7 @@ with DAG(
         task_id="extract_meteo",
         python_callable=fetch_meteo
     )
-    extract_dvf   = PythonOperator(
+    extract_dvf = PythonOperator(
         task_id="extract_dvf",
         python_callable=fetch_dvf
     )
@@ -34,7 +34,7 @@ with DAG(
         task_id="put_meteo_raw",
         python_callable=put_meteo_to_raw_stage
     )
-    put_dvf   = PythonOperator(
+    put_dvf = PythonOperator(
         task_id="put_dvf_raw",
         python_callable=put_dvf_to_raw_stage
     )
@@ -110,7 +110,7 @@ with DAG(
         )
 
     # L : COPY INTO bronze
-    copy_dvf   = SQLExecuteQueryOperator(
+    copy_dvf = SQLExecuteQueryOperator(
         task_id="copy_dvf_bronze",
         conn_id="snowflake_platform",
         sql="""
