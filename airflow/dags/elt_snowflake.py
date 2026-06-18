@@ -20,12 +20,24 @@ with DAG(
 ) as dag:
 
     # E : extraction (réutiliser les fonctions existantes)
-    extract_meteo = PythonOperator(task_id="extract_meteo", python_callable=fetch_meteo)
-    extract_dvf   = PythonOperator(task_id="extract_dvf",   python_callable=fetch_dvf)
+    extract_meteo = PythonOperator(
+        task_id="extract_meteo",
+        python_callable=fetch_meteo
+    )
+    extract_dvf   = PythonOperator(
+        task_id="extract_dvf",
+        python_callable=fetch_dvf
+    )
 
     # L : PUT dans raw stage
-    put_meteo = PythonOperator(task_id="put_meteo_raw", python_callable=put_meteo_to_raw_stage)
-    put_dvf   = PythonOperator(task_id="put_dvf_raw",   python_callable=put_dvf_to_raw_stage)
+    put_meteo = PythonOperator(
+        task_id="put_meteo_raw",
+        python_callable=put_meteo_to_raw_stage
+    )
+    put_dvf   = PythonOperator(
+        task_id="put_dvf_raw",
+        python_callable=put_dvf_to_raw_stage
+    )
 
     # L : CREATE table into bronze (if not exists)
     create_dvf_bronze = SQLExecuteQueryOperator(
@@ -156,5 +168,11 @@ with DAG(
         bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --target snowflake",
     )
 
-    [extract_meteo, extract_dvf] >> [put_meteo, put_dvf] >> [create_dvf_bronze, create_meteo_bronze] >> [copy_dvf, copy_meteo] >> run_dbt
+    (
+        [extract_meteo, extract_dvf]
+        >> [put_meteo, put_dvf]
+        >> [create_dvf_bronze, create_meteo_bronze]
+        >> [copy_dvf, copy_meteo]
+        >> run_dbt
+    )
 
