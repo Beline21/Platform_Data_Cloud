@@ -20,7 +20,7 @@ DATA_DIR = Path("/opt/airflow/output")
 
 def fetch_meteo():
     """Télécharge les données météo Open-Meteo."""
-    
+
     url = Variable.get("METEO_URL")
 
     filename = DATA_DIR / "open_meteo_berlin.json"
