@@ -10,8 +10,10 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.providers.common.sql.operators.sql import \
+    SQLExecuteQueryOperator
 from utils.notifications import notify_failure
+
 
 # ======================
 # CONFIG
@@ -27,6 +29,7 @@ default_args = {
     "retry_delay": timedelta(minutes=5),
     "on_failure_callback": notify_failure
 }
+
 
 # ======================
 # Functions
@@ -81,7 +84,7 @@ def fetch_dvf():
 def put_dvf_to_raw_stage(**context):
     import snowflake.connector
     from airflow.hooks.base import BaseHook
-    
+
     conn_info = BaseHook.get_connection("snowflake_platform")
     extra = conn_info.extra_dejson
 
@@ -153,7 +156,7 @@ def put_meteo_to_raw_stage(**context):
 
 with DAG(
     dag_id="elt_snowflake",
-    schedule_interval=None,  # Utilisation de schedule_interval pour une compatibilité maximale
+    schedule_interval=None,
     start_date=datetime(2026, 3, 1),
     default_args=default_args,
     tags=["snowflake", "elt"],
@@ -163,7 +166,7 @@ with DAG(
         task_id="extract_meteo",
         python_callable=fetch_meteo
     )
-    
+
     extract_dvf = PythonOperator(
         task_id="extract_dvf",
         python_callable=fetch_dvf
@@ -173,7 +176,7 @@ with DAG(
         task_id="put_meteo_raw",
         python_callable=put_meteo_to_raw_stage
     )
-    
+
     put_dvf = PythonOperator(
         task_id="put_dvf_raw",
         python_callable=put_dvf_to_raw_stage
@@ -230,7 +233,7 @@ with DAG(
                 )
             """,
     )
-    
+
     create_meteo_bronze = SQLExecuteQueryOperator(
         task_id="create_meteo_bronze_table",
         conn_id="snowflake_platform",
@@ -265,7 +268,7 @@ with DAG(
             ON_ERROR = 'CONTINUE'
         """,
     )
-    
+
     copy_meteo = SQLExecuteQueryOperator(
         task_id="copy_meteo_bronze",
         conn_id="snowflake_platform",
@@ -304,10 +307,11 @@ with DAG(
 
     run_dbt = BashOperator(
         task_id="run_dbt_snowflake",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --target snowflake",
+        bash_command=f"cd {DBT_PROJECT_DIR} && "
+                     f"dbt run --target snowflake",
     )
 
-    # Déclaration explicite des dépendances sans passer par chain() pour éviter tout conflit de types
+    # Déclaration explicite des dépendances
     [extract_meteo, extract_dvf]
     extract_meteo >> put_meteo >> create_meteo_bronze >> copy_meteo >> run_dbt
     extract_dvf >> put_dvf >> create_dvf_bronze >> copy_dvf >> run_dbt
