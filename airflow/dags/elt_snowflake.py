@@ -5,7 +5,7 @@ import zipfile
 
 import requests
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 from pathlib import Path
 
 from airflow import DAG
@@ -13,24 +13,16 @@ from airflow.models import Variable
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from airflow.utils.dates import days_ago
-
-from utils.notifications import notify_failure
 
 
 # ======================
 # CONFIG
 # ======================
-DATA_DIR = Path("/opt/airflow/output")
-DBT_PROJECT_DIR = "/opt/airflow/dbt"
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "retries": 2,
-    "retry_delay": timedelta(minutes=5),
-    "on_failure_callback": notify_failure
-}
+
+DBT_PROJECT_DIR = "/opt/airflow/dbt"
+DATA_DIR = Path("/opt/airflow/output")
+
 
 # ======================
 # Functions
@@ -183,7 +175,7 @@ def put_meteo_to_raw_stage(**context):
 with DAG(
     dag_id="elt_snowflake",
     schedule=None,
-    start_date=days_ago(1),
+    start_date=datetime(2026, 3, 1),
     tags=["snowflake", "elt"],
 ) as dag:
 
