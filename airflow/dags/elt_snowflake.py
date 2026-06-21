@@ -1,16 +1,279 @@
+import csv
+import json
+import os
+import zipfile
+import requests
+import snowflake.connector
+
+from datetime import datetime
+from pathlib import Path
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.utils.dates import days_ago
-from ingestion import (
-    fetch_meteo,
-    fetch_dvf,
-    put_meteo_to_raw_stage,
-    put_dvf_to_raw_stage,
-)
+from airflow.hooks.base import BaseHook
+from airflow.models import Variable
 
+
+# ======================
+# CONFIG
+# ======================
+DATA_DIR = Path("/opt/airflow/output")
 DBT_PROJECT_DIR = "/opt/airflow/dbt"
+
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+    "on_failure_callback": notify_failure
+}
+
+# ======================
+# METEO
+# ======================
+
+
+def fetch_meteo():
+    url = Variable.get("METEO_URL")
+
+    filename = DATA_DIR / "open_meteo_berlin.json"
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=4)
+
+        return f"Météo Berlin téléchargée : {filename}"
+    else:
+        raise Exception(f"Erreur API Open-Meteo : {response.status_code}")
+
+
+def load_meteo_to_bronze(**context):
+    src = DATA_DIR / "open_meteo_berlin.json"
+    if not src.exists():
+        raise FileNotFoundError(f"Fichier non trouvé : {src}")
+
+    with open(src) as f:
+        data = json.load(f)
+
+    hourly = data["hourly"]
+
+    df = pd.DataFrame({
+        "time": hourly["time"],
+        "temperature_2m": hourly["temperature_2m"]
+    })
+
+    df["latitude"] = data["latitude"]
+    df["longitude"] = data["longitude"]
+    df["elevation"] = data["elevation"]
+    df["generationtime_ms"] = data["generationtime_ms"]
+    df["utc_offset_seconds"] = data["utc_offset_seconds"]
+    df["timezone"] = data["timezone"]
+    df["timezone_abbreviation"] = data["timezone_abbreviation"]
+
+    conn = BaseHook.get_connection("postgres_warehouse")
+    engine = create_engine(
+        (
+            f"postgresql://{conn.login}:{conn.password}"
+            f"@{conn.host}:{conn.port}/{conn.schema}"
+        )
+    )
+
+    df.to_sql(
+        "meteo_quotidien",
+        engine,
+        schema="bronze",
+        if_exists="replace",
+        index=False,
+    )
+
+
+# ======================
+# DVF
+# ======================
+
+
+def fetch_dvf():
+    url = Variable.get("DVF_URL")
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    zip_path = os.path.join(DATA_DIR, "dvf_2025.zip")
+
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        raise Exception(f"Erreur téléch. DVF : {response.status_code}")
+
+    with open(zip_path, "wb") as f:
+        f.write(response.content)
+
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        zip_ref.extractall(DATA_DIR)
+
+    txt_file = [f for f in os.listdir(DATA_DIR) if f.endswith(".txt")][0]
+
+    txt_path = os.path.join(DATA_DIR, txt_file)
+    csv_path = os.path.join(DATA_DIR, "dvf_2025.csv")
+
+    with open(txt_path, "r", encoding="latin-1") as txt_f, \
+         open(csv_path, "w", newline="", encoding="utf-8") as csv_f:
+
+        reader = csv.reader(txt_f, delimiter="|")
+        writer = csv.writer(csv_f)
+
+        for row in reader:
+            writer.writerow(row)
+
+    os.remove(zip_path)
+    os.remove(txt_path)
+
+    return f"CSV généré : {csv_path}"
+
+
+def load_dvf_to_bronze(**context):
+    src = DATA_DIR / "dvf_2025.csv"
+    if not src.exists():
+        raise FileNotFoundError(f"Fichier non trouvé : {src}")
+
+    df = pd.read_csv(
+        src,
+        sep=",",
+        dtype=str,
+        low_memory=False
+    )
+
+    df = df[[
+        "No disposition",
+        "Date mutation",
+        "Nature mutation",
+        "Valeur fonciere",
+        "No voie",
+        "Type de voie",
+        "Code voie",
+        "Voie",
+        "Code postal",
+        "Commune",
+        "Code departement",
+        "Code commune",
+        "Section",
+        "No plan",
+        "Code type local",
+        "Type local",
+        "Surface reelle bati",
+        "Nombre pieces principales",
+        "Nature culture",
+        "Surface terrain"
+    ]]
+
+    conn = BaseHook.get_connection("postgres_warehouse")
+    engine = create_engine(
+        (
+            f"postgresql://{conn.login}:{conn.password}"
+            f"@{conn.host}:{conn.port}/{conn.schema}"
+        )
+    )
+
+    df.to_sql(
+        "dvf_mutations",
+        engine,
+        schema="bronze",
+        if_exists="replace",
+        index=False,
+    )
+
+
+def put_dvf_to_raw_stage(**context):
+    import snowflake.connector
+    from airflow.hooks.base import BaseHook
+    from pathlib import Path
+    import os
+
+    conn_info = BaseHook.get_connection("snowflake_platform")
+    extra = conn_info.extra_dejson
+
+    cnx = snowflake.connector.connect(
+        account=extra["account"],
+        user=conn_info.login,
+        password=conn_info.password,
+        warehouse=extra["warehouse"],
+        database=extra["database"],
+        schema="BRONZE",
+        role=extra.get("role", "ACCOUNTADMIN"),
+    )
+
+    local_path = (
+        Path(os.environ.get("DATA_DIR", "/opt/airflow/output"))
+        / "dvf_2025.csv"
+    )
+    if not local_path.exists():
+        raise FileNotFoundError(f"Fichier non trouvé : {local_path}")
+
+    cursor = cnx.cursor()
+    # PUT dépose le fichier dans le stage avec un préfixe partitionné
+    cursor.execute(
+        f"""
+        PUT file://{local_path}
+        @PLATFORM_DB.BRONZE.RAW_STAGE/dvf/annee=2025/
+        AUTO_COMPRESS=FALSE
+        OVERWRITE=TRUE
+        """
+    )
+    cursor.close()
+    cnx.close()
+
+
+def put_meteo_to_raw_stage(**context):
+    import snowflake.connector
+    from airflow.hooks.base import BaseHook
+    from pathlib import Path
+    from datetime import datetime
+    import os
+
+    conn_info = BaseHook.get_connection("snowflake_platform")
+    extra = conn_info.extra_dejson
+
+    cnx = snowflake.connector.connect(
+        account=extra["account"],
+        user=conn_info.login,
+        password=conn_info.password,
+        warehouse=extra["warehouse"],
+        database=extra["database"],
+        schema="BRONZE",
+        role=extra.get("role", "ACCOUNTADMIN"),
+    )
+
+    today = datetime.now().strftime("%Y-%m-%d")
+    local_path = (
+        Path(os.environ.get("DATA_DIR", "/opt/airflow/output"))
+        / "open_meteo_berlin.json"
+    )
+    if not local_path.exists():
+        raise FileNotFoundError(f"Fichier non trouvé : {local_path}")
+
+    cursor = cnx.cursor()
+    cursor.execute(
+        f"""
+        PUT file://{local_path}
+        @PLATFORM_DB.BRONZE.RAW_STAGE/meteo/date={today}/
+        AUTO_COMPRESS=FALSE
+        OVERWRITE=TRUE
+        """
+    )
+    cursor.close()
+    cnx.close()
+
+
+# ======================
+# DAG
+# ======================
+
 
 with DAG(
     dag_id="elt_snowflake",
