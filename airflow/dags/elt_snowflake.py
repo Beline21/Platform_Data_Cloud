@@ -344,5 +344,5 @@ with DAG(
         [put_meteo, put_dvf],
         [create_dvf_bronze, create_meteo_bronze],
         [copy_dvf, copy_meteo],
-        run_dbt
+        [run_dbt]
     )
