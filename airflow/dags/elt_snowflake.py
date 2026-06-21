@@ -184,7 +184,7 @@ def put_meteo_to_raw_stage(**context):
 
 with DAG(
     dag_id="elt_snowflake",
-    schedule_interval=None,
+    schedule=None,
     start_date=datetime(2026, 3, 1),
     default_args=default_args,
     tags=["snowflake", "elt"],
