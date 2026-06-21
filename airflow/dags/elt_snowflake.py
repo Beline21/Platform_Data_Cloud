@@ -5,7 +5,7 @@ import zipfile
 
 import requests
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from airflow import DAG
@@ -13,6 +13,7 @@ from airflow.models import Variable
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from utils.notifications import notify_failure
 
 
 # ======================
@@ -22,6 +23,14 @@ from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
 DBT_PROJECT_DIR = "/opt/airflow/dbt"
 DATA_DIR = Path("/opt/airflow/output")
+
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+    "on_failure_callback": notify_failure
+}
 
 
 # ======================
@@ -176,6 +185,7 @@ with DAG(
     dag_id="elt_snowflake",
     schedule=None,
     start_date=datetime(2026, 3, 1),
+    default_args=default_args,
     tags=["snowflake", "elt"],
 ) as dag:
 
