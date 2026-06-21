@@ -5,7 +5,7 @@ import zipfile
 
 import requests
 
-from datetime import timedelta, datetime
+from datetime import datetime
 from pathlib import Path
 
 from airflow import DAG
