@@ -156,7 +156,6 @@ def put_meteo_to_raw_stage(**context):
 
 with DAG(
     dag_id="elt_snowflake",
-    schedule_interval=None,
     start_date=datetime(2026, 3, 1),
     default_args=default_args,
     tags=["snowflake", "elt"],
@@ -309,6 +308,7 @@ with DAG(
         task_id="run_dbt_snowflake",
         bash_command=f"cd {DBT_PROJECT_DIR} && "
                      f"dbt run --target snowflake",
+        cwd=DBT_PROJECT_DIR,
     )
 
     # Déclaration explicite des dépendances
