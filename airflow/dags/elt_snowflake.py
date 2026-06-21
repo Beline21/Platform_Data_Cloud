@@ -2,18 +2,20 @@ import csv
 import json
 import os
 import zipfile
-import requests
-import snowflake.connector
 
-from datetime import datetime
+import requests
+
+from datetime import timedelta
 from pathlib import Path
+
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.models import Variable
 from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.utils.dates import days_ago
-from airflow.hooks.base import BaseHook
-from airflow.models import Variable
+
+from utils.notifications import notify_failure
 
 
 # ======================
@@ -31,7 +33,7 @@ default_args = {
 }
 
 # ======================
-# METEO
+# Functions
 # ======================
 
 
@@ -52,51 +54,6 @@ def fetch_meteo():
         return f"Météo Berlin téléchargée : {filename}"
     else:
         raise Exception(f"Erreur API Open-Meteo : {response.status_code}")
-
-
-def load_meteo_to_bronze(**context):
-    src = DATA_DIR / "open_meteo_berlin.json"
-    if not src.exists():
-        raise FileNotFoundError(f"Fichier non trouvé : {src}")
-
-    with open(src) as f:
-        data = json.load(f)
-
-    hourly = data["hourly"]
-
-    df = pd.DataFrame({
-        "time": hourly["time"],
-        "temperature_2m": hourly["temperature_2m"]
-    })
-
-    df["latitude"] = data["latitude"]
-    df["longitude"] = data["longitude"]
-    df["elevation"] = data["elevation"]
-    df["generationtime_ms"] = data["generationtime_ms"]
-    df["utc_offset_seconds"] = data["utc_offset_seconds"]
-    df["timezone"] = data["timezone"]
-    df["timezone_abbreviation"] = data["timezone_abbreviation"]
-
-    conn = BaseHook.get_connection("postgres_warehouse")
-    engine = create_engine(
-        (
-            f"postgresql://{conn.login}:{conn.password}"
-            f"@{conn.host}:{conn.port}/{conn.schema}"
-        )
-    )
-
-    df.to_sql(
-        "meteo_quotidien",
-        engine,
-        schema="bronze",
-        if_exists="replace",
-        index=False,
-    )
-
-
-# ======================
-# DVF
-# ======================
 
 
 def fetch_dvf():
@@ -135,58 +92,6 @@ def fetch_dvf():
     os.remove(txt_path)
 
     return f"CSV généré : {csv_path}"
-
-
-def load_dvf_to_bronze(**context):
-    src = DATA_DIR / "dvf_2025.csv"
-    if not src.exists():
-        raise FileNotFoundError(f"Fichier non trouvé : {src}")
-
-    df = pd.read_csv(
-        src,
-        sep=",",
-        dtype=str,
-        low_memory=False
-    )
-
-    df = df[[
-        "No disposition",
-        "Date mutation",
-        "Nature mutation",
-        "Valeur fonciere",
-        "No voie",
-        "Type de voie",
-        "Code voie",
-        "Voie",
-        "Code postal",
-        "Commune",
-        "Code departement",
-        "Code commune",
-        "Section",
-        "No plan",
-        "Code type local",
-        "Type local",
-        "Surface reelle bati",
-        "Nombre pieces principales",
-        "Nature culture",
-        "Surface terrain"
-    ]]
-
-    conn = BaseHook.get_connection("postgres_warehouse")
-    engine = create_engine(
-        (
-            f"postgresql://{conn.login}:{conn.password}"
-            f"@{conn.host}:{conn.port}/{conn.schema}"
-        )
-    )
-
-    df.to_sql(
-        "dvf_mutations",
-        engine,
-        schema="bronze",
-        if_exists="replace",
-        index=False,
-    )
 
 
 def put_dvf_to_raw_stage(**context):
