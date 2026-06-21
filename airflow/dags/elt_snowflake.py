@@ -14,6 +14,7 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from utils.notifications import notify_failure
+from airflow.models.baseoperator import chain
 
 
 # ======================
@@ -338,10 +339,10 @@ with DAG(
         bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --target snowflake",
     )
 
-    (
-        [extract_meteo, extract_dvf]
-        >> [put_meteo, put_dvf]
-        >> [create_dvf_bronze, create_meteo_bronze]
-        >> [copy_dvf, copy_meteo]
-        >> run_dbt
+    chain(
+        [extract_meteo, extract_dvf],
+        [put_meteo, put_dvf],
+        [create_dvf_bronze, create_meteo_bronze],
+        [copy_dvf, copy_meteo],
+        run_dbt
     )
