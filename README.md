@@ -10,6 +10,8 @@ Il a pour objectif de consuruire une platteforme ELT en utilisant les outils tel
 
 Le dépot GitHub se trouve à cette adresse : https://github.com/Beline21/Platform_Data_Cloud.git
 
+Les captures d'écran de chacune des étapes du projet sont présentes dans le dossier /results.
+
 Vous devrez avoir installé les applications suivantes : Docker, pgAdmin, Apache Airflow, Portainer, Terraform, dbt, PostgreSQL et Git.
 
 
