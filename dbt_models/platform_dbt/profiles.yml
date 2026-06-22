@@ -1,12 +1,13 @@
 platform_dbt:
   outputs:
-    dev:
-      dbname: warehouse
-      host: postgres
-      pass: "{{ env_var('POSTGRES_PASSWORD', 'svc_dwh') }}"
-      port: 5432
-      schema: dbt
+    snowflake:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT', 'QJTMYCC-PB20312') }}"
+      user: "{{ env_var('SNOWFLAKE_USER', 'svc_terraform') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD', 'TerraformPass123!') }}"
+      role: "ACCOUNTADMIN"
+      warehouse: "PLATFORM_WH"
+      database: "PLATFORM_DB"
+      schema: SILVER
       threads: 2
-      type: postgres
-      user: "{{ env_var('POSTGRES_USER', 'svc_dwh') }}"
   target: dev
