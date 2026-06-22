@@ -8,6 +8,8 @@ Ce projet a débuté le 12 février 2026 et doit se finir le 15 juin 2026.
 
 Il a pour objectif de consuruire une platteforme ELT en utilisant les outils tels que Docker, pgAdmin, Apache Airflow, Portainer, Snowflake, Terraform et DBT.
 
+Le dépot GitHub se trouve à cette adresse : https://github.com/Beline21/Platform_Data_Cloud.git
+
 Vous devrez avoir installé les applications suivantes : Docker, pgAdmin, Apache Airflow, Portainer, Terraform, dbt, PostgreSQL et Git.
 
 
@@ -100,6 +102,10 @@ cd ../dbt_models/platform_dbt
 dbt run
 
 
+## Gouvernance / accès
+
+Aucun mot de passe, token ou clé sont visibles dans le Git.
+Les variables et connexions sont stockées dans Airflow et remplacées dans le code par des appels Variable.get ou BaseHook.get_connection.
 
 
 
@@ -146,3 +152,62 @@ dbt run
       |-  logs
       |-  plugins
       |-  .env
+
+
+/opt
+|-  containerd
+|-  lost+found
+|-  docker
+|-  airflow
+   |- output
+|-  docker-volumes
+   |-  postgres
+   |-  redis
+   |-  pgadmin
+   |-  airflow
+      |-  logs
+         |-  'dag_id=dvf_2025_extraction'
+         |-  'dag_id=elt_e2e'
+         |-  'dag_id=elt_snowflake'
+         |-  'dag_id=hello_world_simple'
+         |-  'dag_id=hello_world_simple_test'
+         |-  'dag_id=open_meteo_berlin'
+         |-   dag_processor
+      |-  config
+         |-  airflow.cfg
+      |-  plugins
+      |-  data
+      |-  dags
+         |-  hello_dag.py
+
+
+
+## Lac de données
+
+Les fichiers arrivent dans RAW_STAGE de Bronze via un PUT de Airflow suivant un schéma de dossiers. Ces fichiers sont copiés dans les Tables (COPY INTO). Ils sont nettoyés dans SILVER_SILVER et le schéma en étoile est défini dans SILVER_GOLD.
+
+|-  PLATFORM_DB
+   |-  BRONZE
+      |-  Tables
+         |-  DVF_MUTATIONS
+         |-  METEO_QUOTIDIEN
+      |-  Stages
+         |-  RAW_STAGE
+            |-  dvf
+               |-  annee=2025
+                  |-  dvf_2025.csv
+            |-  meteo
+               |-  date=2026-06-28
+                  |-  open_meteo_berlin.json
+         |-  REFINED_STAGE
+   |-  SILVER_SILVER
+      |-  Tables
+         |-  DVF_MUTATIONS
+         |-  METEO_QUOTIDIEN
+   |-  SILVER_GOLD
+      |-  Tables
+         |-  DIM_COMMUNE
+         |-  DIM_TIME
+         |-  DIM_TYPE_LOCAL
+         |-  FACT_METEO
+         |-  FACT_MUTATIONS
