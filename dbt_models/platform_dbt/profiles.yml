@@ -2,9 +2,9 @@ platform_dbt:
   outputs:
     snowflake:
       type: snowflake
-      account: "{{ env_var('SNOWFLAKE_ACCOUNT', 'QJTMYCC-PB20312') }}"
-      user: "{{ env_var('SNOWFLAKE_USER', 'svc_terraform') }}"
-      password: "{{ env_var('SNOWFLAKE_PASSWORD', 'TerraformPass123!') }}"
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT', 'xxx') }}"
+      user: "{{ env_var('SNOWFLAKE_USER', 'xxx') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD', 'xxx') }}"
       role: "ACCOUNTADMIN"
       warehouse: "PLATFORM_WH"
       database: "PLATFORM_DB"
