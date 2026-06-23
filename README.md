@@ -480,10 +480,10 @@ docker exec -it airflow-scheduler airflow dags trigger e2e_dag
 ```bash
 cd ~/platform-data/dbt_models/platform_dbt
 
-dbt run
-dbt test
+dbt run --target snowflake
+dbt test --target snowflake
 
-dbt docs generate
+dbt docs generate --target snowflake
 dbt docs serve
 ```
 
@@ -521,7 +521,7 @@ docker compose up -d
 cd airflow
 docker compose up -d
 
-cd ../dbt_models/platform_dbt
+cd dbt_models/platform_dbt
 
 dbt run --target snowflake
 ```
